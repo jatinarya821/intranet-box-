@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+  // Mark better-sqlite3 as server-side only (native module — cannot be bundled)
+  serverExternalPackages: ['better-sqlite3'],
+
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
