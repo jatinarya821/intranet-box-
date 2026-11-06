@@ -5,6 +5,7 @@ import Link from 'next/link';
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [currentTime, setCurrentTime] = useState('');
 
   useEffect(() => {
     fetch('/api/stats')
@@ -15,6 +16,11 @@ export default function Dashboard() {
       fetch('/api/stats').then(r => r.json()).then(setStats).catch(() => {});
     }, 15000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setCurrentTime(new Date().toLocaleString()), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const modules = [
@@ -93,7 +99,7 @@ export default function Dashboard() {
             <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block"></span>
             System Online
           </span>
-          <span className="text-xs text-slate-500">{new Date().toLocaleString()}</span>
+          {currentTime && <span className="text-xs text-slate-500">{currentTime}</span>}
         </div>
       </div>
 
