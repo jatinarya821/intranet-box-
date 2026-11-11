@@ -106,9 +106,9 @@ export default function ConnectPage() {
   ];
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto min-w-0 w-full">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-100">📱 Connect to This Network</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-100">📱 Connect to This Network</h1>
         <p className="text-slate-400 text-sm mt-0.5">Join the hotspot, then open the local portal · No internet required</p>
       </div>
 
@@ -118,9 +118,9 @@ export default function ConnectPage() {
             {wifiQrDataUrl ? (
               // QR data URLs are generated locally and do not need image optimization.
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={wifiQrDataUrl} alt="Wi-Fi connection QR code" className="w-36 h-36 rounded" />
+              <img src={wifiQrDataUrl} alt="Wi-Fi connection QR code" className="w-28 h-28 sm:w-36 sm:h-36 rounded" />
             ) : (
-              <div className="w-36 h-36 flex items-center justify-center text-slate-400 text-xs text-center px-3">
+              <div className="w-28 h-28 sm:w-36 sm:h-36 flex items-center justify-center text-slate-400 text-xs text-center px-3">
                 Enter the hotspot name and password
               </div>
             )}
@@ -161,9 +161,9 @@ export default function ConnectPage() {
             {qrDataUrl ? (
               // QR data URLs are generated locally and do not need image optimization.
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={qrDataUrl} alt="QR Code" className="w-48 h-48 rounded" />
+              <img src={qrDataUrl} alt="QR Code" className="w-36 h-36 sm:w-48 sm:h-48 rounded" />
             ) : (
-              <div className="w-48 h-48 flex items-center justify-center text-slate-400 text-sm">
+              <div className="w-36 h-36 sm:w-48 sm:h-48 flex items-center justify-center text-slate-400 text-sm">
                 Finding LAN address…
               </div>
             )}

@@ -69,7 +69,7 @@ export default function RegistryPage() {
   }, {});
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5">
+    <div className="max-w-4xl mx-auto space-y-5 min-w-0 w-full">
       {/* Page Title & Quick Action */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
@@ -309,7 +309,7 @@ export default function RegistryPage() {
                       {person.notes && (
                         <span className="flex items-center gap-1 italic text-slate-400">
                           <span>📝</span>
-                          <span>{person.notes}</span>
+                          <span className="break-words">{person.notes}</span>
                         </span>
                       )}
                     </div>

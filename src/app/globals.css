@@ -1,8 +1,35 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+}
+
+:root.dark {
   --background: #020617;
   --foreground: #f1f5f9;
+}
+
+/* Light-mode color overrides — swap slate shades so all existing dark-themed
+   Tailwind classes automatically work in light mode without touching JSX. */
+:root:not(.dark) {
+  /* Page / card backgrounds: dark blues become light grays */
+  --color-slate-950: #f8fafc;
+  --color-slate-900: #f1f5f9;
+  --color-slate-800: #e2e8f0;
+  --color-slate-700: #cbd5e1;
+  --color-slate-600: #94a3b8;
+  /* Text: light grays become dark grays */
+  --color-slate-500: #64748b;
+  --color-slate-400: #475569;
+  --color-slate-300: #334155;
+  --color-slate-200: #1e293b;
+  --color-slate-100: #0f172a;
+  --color-slate-50: #020617;
+  /* Black stays black */
+  --color-black: #000000;
 }
 
 body {
@@ -22,16 +49,12 @@ body {
   width: 6px;
   height: 6px;
 }
-::-webkit-scrollbar-track {
-  background: #0b1120;
-}
-::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
+:root.dark ::-webkit-scrollbar-track { background: #0b1120; }
+:root.dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+:root.dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
+:root:not(.dark) ::-webkit-scrollbar-track { background: #f1f5f9; }
+:root:not(.dark) ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+:root:not(.dark) ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
 /* Prose formatting for emergency articles */
 .article-content {
@@ -40,7 +63,7 @@ body {
 }
 .article-content strong,
 .article-content b {
-  color: #ffffff;
+  color: var(--foreground);
   font-weight: 700;
 }
 
@@ -84,6 +107,28 @@ body {
   background-color: rgba(100, 116, 139, 0.18);
   color: #cbd5e1;
   border: 1px solid rgba(100, 116, 139, 0.5);
+}
+
+/* Light-mode status badge overrides */
+:root:not(.dark) .status-safe {
+  background-color: rgba(34, 197, 94, 0.12);
+  color: #15803d;
+  border-color: rgba(34, 197, 94, 0.4);
+}
+:root:not(.dark) .status-missing {
+  background-color: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+:root:not(.dark) .status-injured {
+  background-color: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border-color: rgba(245, 158, 11, 0.4);
+}
+:root:not(.dark) .status-unknown {
+  background-color: rgba(100, 116, 139, 0.12);
+  color: #475569;
+  border-color: rgba(100, 116, 139, 0.4);
 }
 
 /* Animations */

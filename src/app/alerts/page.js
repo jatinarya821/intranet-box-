@@ -83,15 +83,15 @@ export default function AlertsPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-3xl mx-auto min-w-0 w-full">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">🚨 Emergency Alerts</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-100">🚨 Emergency Alerts</h1>
           <p className="text-slate-400 text-sm mt-0.5">Broadcast urgent announcements · Auto-refreshes every 10s</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-medium transition-colors"
+          className="w-full sm:w-auto px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-medium transition-colors"
         >
           {showForm ? '✕ Cancel' : '+ Post Alert'}
         </button>
@@ -177,7 +177,7 @@ export default function AlertsPage() {
                           {st.label}
                         </span>
                       </div>
-                      <p className="text-slate-300 text-sm mt-1 leading-relaxed">{alert.body}</p>
+                      <p className="text-slate-300 text-sm mt-1 leading-relaxed break-words">{alert.body}</p>
                       <p className="text-slate-500 text-xs mt-2">
                         {new Date(alert.created_at).toLocaleString()}
                       </p>

@@ -94,15 +94,15 @@ export default function InventoryPage() {
   const lowStock = resources.filter(r => r.quantity < 20);
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-4xl mx-auto min-w-0 w-full">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">📦 Resource Inventory</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-100">📦 Resource Inventory</h1>
           <p className="text-slate-400 text-sm mt-0.5">Track food, water, medicine and equipment stockpiles</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium transition-colors"
+          className="w-full sm:w-auto px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium transition-colors"
         >
           {showForm ? '✕ Cancel' : '+ Add Resource'}
         </button>
@@ -198,7 +198,7 @@ export default function InventoryPage() {
                           <div className="text-xs text-slate-500 mt-0.5">📍 {resource.location}</div>
                         )}
                       </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
                         {editing === resource.id ? (
                           <>
                             <input

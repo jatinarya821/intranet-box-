@@ -76,10 +76,10 @@ export default function KnowledgePage() {
   }, {});
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="mb-6 flex items-start justify-between gap-3">
+    <div className="max-w-5xl mx-auto min-w-0 w-full">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">📚 Knowledge Base</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-100">📚 Knowledge Base</h1>
           <p className="text-slate-400 text-sm mt-0.5">Preloaded offline guides · First aid, agriculture, health, disaster SOPs</p>
         </div>
         <button
@@ -153,7 +153,7 @@ export default function KnowledgePage() {
           >
             ← Back to articles
           </button>
-          <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
+          <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 sm:p-6">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xs px-2 py-0.5 rounded bg-slate-700 text-slate-400 font-medium">
                 {CAT_ICONS[selected.category]} {selected.category}

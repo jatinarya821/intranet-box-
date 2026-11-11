@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const navItems = [
   { href: '/', label: 'Command Center', icon: '🏠', badge: null },
@@ -57,6 +58,9 @@ export default function Sidebar() {
         </Link>
 
         <div className="flex items-center gap-2">
+          {/* Theme toggle */}
+          <ThemeToggle />
+
           {/* Quick QR link for mobile */}
           <Link
             href="/connect"
@@ -209,6 +213,10 @@ export default function Sidebar() {
               <span className="text-emerald-400 font-semibold font-mono text-[11px]">
                 OFFLINE ONLY
               </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Theme</span>
+              <ThemeToggle />
             </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-400">Server Port</span>

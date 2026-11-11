@@ -51,7 +51,7 @@ export default function AdminPage() {
     });
   };
 
-  const changePin = (event) => {
+  const changePin = async (event) => {
     event.preventDefault();
     setError('');
     setMessage('');
@@ -117,10 +117,10 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex items-start justify-between gap-3">
+    <div className="max-w-3xl mx-auto space-y-6 min-w-0 w-full">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">⚙️ Camp Settings</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-100">⚙️ Camp Settings</h1>
           <p className="text-slate-400 text-sm mt-0.5">PIN-protected controls for this intranet box</p>
         </div>
         <span className={`text-xs px-2 py-1 rounded-full border ${unlocked ? 'text-emerald-300 border-emerald-500/40' : 'text-slate-400 border-slate-600'}`}>
@@ -173,7 +173,7 @@ export default function AdminPage() {
               type="password"
               inputMode="numeric"
               placeholder={field === 'currentPin' ? 'Current PIN' : field === 'newPin' ? 'New PIN' : 'Confirm PIN'}
-              className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100"
+              className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100"
               value={pinForm[field]}
               onChange={(event) => setPinForm((current) => ({ ...current, [field]: event.target.value }))}
               required

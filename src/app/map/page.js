@@ -80,10 +80,10 @@ export default function MapPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="mb-6 flex items-start justify-between gap-3">
+    <div className="max-w-5xl mx-auto min-w-0 w-full">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">🗺️ Offline Map</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-100">🗺️ Offline Map</h1>
           <p className="text-slate-400 text-sm mt-0.5">Shelter locations, medical camps, food/water points, danger zones</p>
         </div>
         <button
@@ -98,13 +98,13 @@ export default function MapPage() {
         <form onSubmit={savePin} className="mb-4 bg-slate-800/60 border border-slate-700 rounded-xl p-4 space-y-3">
           <p className="text-xs text-slate-400">Tap the map to set the pin, then save. Position: {draft.x_pct}%, {draft.y_pct}%.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input required placeholder="Place name" className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm" value={draft.label} onChange={(event) => setDraft((current) => ({ ...current, label: event.target.value }))} />
-            <select className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm" value={draft.type} onChange={(event) => setDraft((current) => ({ ...current, type: event.target.value }))}>
+            <input required placeholder="Place name" className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm" value={draft.label} onChange={(event) => setDraft((current) => ({ ...current, label: event.target.value }))} />
+            <select className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm" value={draft.type} onChange={(event) => setDraft((current) => ({ ...current, type: event.target.value }))}>
               {LEGEND_TYPES.map((type) => <option key={type} value={type}>{TYPE_CONFIG[type].label}</option>)}
             </select>
-            <input placeholder="Directions" className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm sm:col-span-2" value={draft.notes} onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))} />
-            <input type="number" placeholder="Capacity" className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm" value={draft.capacity} onChange={(event) => setDraft((current) => ({ ...current, capacity: event.target.value }))} />
-            <input type="number" placeholder="People there now" className="bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm" value={draft.current_count} onChange={(event) => setDraft((current) => ({ ...current, current_count: event.target.value }))} />
+            <input placeholder="Directions" className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm sm:col-span-2" value={draft.notes} onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))} />
+            <input type="number" placeholder="Capacity" className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm" value={draft.capacity} onChange={(event) => setDraft((current) => ({ ...current, capacity: event.target.value }))} />
+            <input type="number" placeholder="People there now" className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm" value={draft.current_count} onChange={(event) => setDraft((current) => ({ ...current, current_count: event.target.value }))} />
           </div>
           <button type="submit" className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm">Save pin</button>
         </form>
@@ -188,7 +188,7 @@ export default function MapPage() {
           </div>
         </div>
 
-        <div className="lg:w-64 space-y-3 min-w-0">
+        <div className="w-full lg:w-64 space-y-3 min-w-0">
           {selectedPin ? (
             <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4">
               <div className="text-2xl mb-2">{TYPE_CONFIG[selectedPin.type]?.icon}</div>

@@ -48,15 +48,15 @@ export default function BulletinPage() {
   const getColor = (author) => AVATAR_COLORS[(author.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto min-w-0 w-full">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-100">💬 Community Bulletin Board</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-100">💬 Community Bulletin Board</h1>
         <p className="text-slate-400 text-sm mt-0.5">Post notices · Visible to everyone on the network · Auto-refreshes every 15s</p>
       </div>
 
       {/* Post form */}
-      <form onSubmit={handleSubmit} className="mb-6 bg-slate-800/60 border border-slate-700 rounded-xl p-5 space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <form onSubmit={handleSubmit} className="mb-6 bg-slate-800/60 border border-slate-700 rounded-xl p-4 sm:p-5 space-y-3">
+        <div className="grid grid-cols-1 gap-3">
           <div>
             <label className="text-xs text-slate-400 block mb-1">Your Name (optional)</label>
             <input
@@ -66,7 +66,7 @@ export default function BulletinPage() {
               onChange={e => setForm(f => ({ ...f, author: e.target.value }))}
             />
           </div>
-          <div className="sm:col-span-2">
+          <div>
             <label className="text-xs text-slate-400 block mb-1">Message *</label>
             <input
               className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm focus:outline-none focus:border-blue-500"
@@ -103,7 +103,7 @@ export default function BulletinPage() {
             const initial = author[0].toUpperCase();
             const color = getColor(author);
             return (
-              <div key={post.id} className="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 flex gap-3">
+              <div key={post.id} className="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 flex gap-3 min-w-0">
                 <div className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-sm font-bold text-white ${color}`}>
                   {initial}
                 </div>
@@ -112,7 +112,7 @@ export default function BulletinPage() {
                     <span className="font-medium text-slate-200 text-sm">{author}</span>
                     <span className="text-xs text-slate-500">{new Date(post.created_at).toLocaleString()}</span>
                   </div>
-                  <p className="text-slate-300 text-sm mt-1 leading-relaxed">{post.message}</p>
+                  <p className="text-slate-300 text-sm mt-1 leading-relaxed break-words">{post.message}</p>
                 </div>
                 <button
                   onClick={() => handleDelete(post.id)}

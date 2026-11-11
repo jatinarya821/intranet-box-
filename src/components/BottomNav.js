@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const mainTabs = [
   { href: '/', label: 'Home', icon: '🏠' },
@@ -60,12 +61,15 @@ export default function BottomNav() {
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                 Emergency Modules & Tools
               </span>
-              <button
-                onClick={() => setMoreOpen(false)}
-                className="text-slate-400 hover:text-slate-200 text-sm px-2 py-1 rounded"
-              >
-                ✕ Close
-              </button>
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <button
+                  onClick={() => setMoreOpen(false)}
+                  className="text-slate-400 hover:text-slate-200 text-sm px-2 py-1 rounded"
+                >
+                  ✕ Close
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-2.5">
