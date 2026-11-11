@@ -165,5 +165,5 @@ Write-Host "  Press Ctrl+C to stop the server." -ForegroundColor DarkGray
 Write-Host ""
 
 # Start the server bound to 0.0.0.0 so all connected Wi-Fi devices can access it
-$env:HOSTNAME = "0.0.0.0"
-npx next dev -p $Port -H 0.0.0.0
+npm.cmd run dev -- --port $Port --hostname 0.0.0.0
+exit $LASTEXITCODE

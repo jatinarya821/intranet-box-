@@ -48,5 +48,5 @@ Write-Host "  Access URL: http://${hotspotIp}:${Port}" -ForegroundColor Yellow
 Write-Host "=============================================" -ForegroundColor Green
 Write-Host ""
 
-$env:HOSTNAME = "0.0.0.0"
-npx next dev -p $Port -H 0.0.0.0
+npm.cmd run dev -- --port $Port --hostname 0.0.0.0
+exit $LASTEXITCODE

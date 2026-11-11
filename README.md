@@ -25,8 +25,11 @@ A portable local emergency information server. During disasters or connectivity 
 ### Option 1: Windows (Laptop)
 
 ```powershell
+# From the disaster_management folder, enter the app folder first.
+Set-Location .\intranet_box
+
 # 1. Install dependencies (first time only)
-npm install
+npm.cmd install
 
 # 2. Run the one-click startup script (opens hotspot settings + starts server)
 powershell -ExecutionPolicy Bypass -File .\start-intranet.ps1
@@ -35,8 +38,10 @@ powershell -ExecutionPolicy Bypass -File .\start-intranet.ps1
 **Or manually:**
 1. **Enable Mobile Hotspot:** Settings → Network & Internet → Mobile Hotspot → Turn ON
 2. Note the IP shown (usually `192.168.137.1`)
-3. Run: `npm run build && npx next start -p 3000 -H 0.0.0.0`
+3. In `intranet_box`, run `npm.cmd run build`. Once the build succeeds, run `npm.cmd start`.
 4. Others connect to your hotspot and open `http://192.168.137.1:3000`
+
+For development, run `npm.cmd run dev` from `intranet_box`. Use `npm.cmd` in Windows PowerShell to avoid relying on its permission to run the `npm.ps1` shim. Stop any previous server with `Ctrl+C` before switching between development and production.
 
 ### Option 2: Raspberry Pi / Linux
 
