@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import getDb from '@/lib/db';
-import { isAdminRequest } from '@/lib/auth';
+import { hasRole } from '@/lib/auth';
 
 export async function GET() {
   try {
@@ -14,8 +14,8 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    if (!isAdminRequest(request)) {
-      return NextResponse.json({ error: 'Admin PIN required' }, { status: 401 });
+    if (!hasRole(request, ['admin', 'operator'])) {
+      return NextResponse.json({ error: 'Alert operator access required' }, { status: 403 });
     }
     const db = getDb();
     const { title, severity, body } = await request.json();
@@ -37,8 +37,8 @@ export async function POST(request) {
 
 export async function DELETE(request) {
   try {
-    if (!isAdminRequest(request)) {
-      return NextResponse.json({ error: 'Admin PIN required' }, { status: 401 });
+    if (!hasRole(request, ['admin', 'operator'])) {
+      return NextResponse.json({ error: 'Alert operator access required' }, { status: 403 });
     }
     const db = getDb();
     const { searchParams } = new URL(request.url);

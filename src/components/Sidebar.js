@@ -14,6 +14,7 @@ const navItems = [
   { href: '/bulletin', label: 'Bulletin Board', icon: '💬', badge: null },
   { href: '/connect', label: 'Hotspot / QR', icon: '📱', badge: null },
   { href: '/admin', label: 'Camp Settings', icon: '⚙️', badge: null },
+  { href: '/admin/alerts', label: 'Alert Operations', icon: '📢', badge: null },
 ];
 
 export default function Sidebar() {

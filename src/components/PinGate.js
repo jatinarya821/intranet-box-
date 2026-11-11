@@ -4,8 +4,12 @@ import { useState } from 'react';
 
 const KEY = 'intranet_admin_token';
 
+function getStorage() {
+  return typeof window === 'undefined' ? null : window.sessionStorage;
+}
+
 export function adminHeaders(extra = {}) {
-  const token = typeof window !== 'undefined' ? sessionStorage.getItem(KEY) : '';
+  const token = getStorage()?.getItem(KEY) || '';
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -14,15 +18,15 @@ export function adminHeaders(extra = {}) {
 }
 
 export function clearAdminToken() {
-  sessionStorage.removeItem(KEY);
+  getStorage()?.removeItem(KEY);
 }
 
 export function hasAdminToken() {
-  return Boolean(sessionStorage.getItem(KEY));
+  return Boolean(getStorage()?.getItem(KEY));
 }
 
 export function saveAdminToken(token) {
-  sessionStorage.setItem(KEY, token);
+  getStorage()?.setItem(KEY, token);
 }
 
 export async function adminFetch(url, options = {}) {
@@ -34,7 +38,7 @@ export async function adminFetch(url, options = {}) {
   return res;
 }
 
-export default function PinGate({ open, onClose, onUnlocked }) {
+export default function PinGate({ open, onClose, onUnlocked, role = 'admin' }) {
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -49,7 +53,7 @@ export default function PinGate({ open, onClose, onUnlocked }) {
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin }),
+        body: JSON.stringify({ pin, role }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -69,8 +73,14 @@ export default function PinGate({ open, onClose, onUnlocked }) {
   return (
     <div className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
       <form onSubmit={submit} className="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-2xl p-5 shadow-2xl">
-        <h2 className="text-lg font-bold text-slate-100">Admin PIN</h2>
-        <p className="text-sm text-slate-400 mt-1">This action is limited to camp operators. The default PIN is 1234 until it is changed in Settings.</p>
+        <h2 className="text-lg font-bold text-slate-100">
+          {role === 'operator' ? 'Alert Operator PIN' : 'Admin PIN'}
+        </h2>
+        <p className="text-sm text-slate-400 mt-1">
+          {role === 'operator'
+            ? 'Use the alert operator PIN configured by an administrator. The initial operator PIN is 5678.'
+            : 'This action is limited to camp administrators. The default PIN is 1234 until it is changed in Settings.'}
+        </p>
         <input
           type="password"
           inputMode="numeric"

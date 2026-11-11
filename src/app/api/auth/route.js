@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import getDb from '@/lib/db';
-import { changePin, issueToken, isAdminRequest, verifyPin } from '@/lib/auth';
+import { changePin, issueToken, isAdminRequest, setOperatorPin, verifyOperatorPin, verifyPin } from '@/lib/auth';
 
 export async function GET(request) {
   return NextResponse.json({ unlocked: isAdminRequest(request) });
@@ -14,11 +14,18 @@ export async function POST(request) {
       if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
       return NextResponse.json({ token: result.token, expiresAt: result.expiresAt });
     }
+    if (body.action === 'set-operator' && isAdminRequest(request)) {
+      const result = setOperatorPin(body.pin);
+      if (result.error) return NextResponse.json({ error: result.error }, { status: 400 });
+      return NextResponse.json({ success: true });
+    }
 
-    if (!verifyPin(body.pin)) {
+    const role = body.role === 'operator' ? 'operator' : 'admin';
+    const valid = role === 'operator' ? verifyOperatorPin(body.pin) : verifyPin(body.pin);
+    if (!valid) {
       return NextResponse.json({ error: 'Wrong PIN' }, { status: 401 });
     }
-    const session = issueToken();
+    const session = issueToken(role);
     return NextResponse.json(session);
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

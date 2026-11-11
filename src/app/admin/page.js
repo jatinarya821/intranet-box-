@@ -6,6 +6,7 @@ import PinGate, { adminFetch, clearAdminToken, hasAdminToken, saveAdminToken } f
 export default function AdminPage() {
   const [settings, setSettings] = useState({ camp_name: '', hotspot_ip: '', hotspot_ssid: '' });
   const [pinForm, setPinForm] = useState({ currentPin: '', newPin: '', confirm: '' });
+  const [operatorPin, setOperatorPin] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [gateOpen, setGateOpen] = useState(false);
@@ -73,6 +74,23 @@ export default function AdminPage() {
     setPinForm({ currentPin: '', newPin: '', confirm: '' });
     setMessage('PIN updated. This browser stays unlocked.');
     setUnlocked(true);
+  };
+
+  const changeOperatorPin = async (event) => {
+    event.preventDefault();
+    setError('');
+    setMessage('');
+    const res = await adminFetch('/api/auth', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'set-operator', pin: operatorPin }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error || 'Could not set operator PIN');
+      return;
+    }
+    setOperatorPin('');
+    setMessage('Alert operator PIN updated.');
   };
 
   const exportData = () => {
@@ -182,6 +200,26 @@ export default function AdminPage() {
         </div>
         <button type="submit" className="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-sm font-medium">
           Update PIN
+        </button>
+      </form>
+
+      <form onSubmit={changeOperatorPin} className="bg-slate-800/60 border border-slate-700 rounded-xl p-5 space-y-4">
+        <h2 className="font-semibold text-slate-100">Alert operator access</h2>
+        <p className="text-xs text-slate-500">Operators can broadcast and delete alerts, but cannot change camp settings or reset data.</p>
+        <input
+          type="password"
+          inputMode="numeric"
+          pattern="[0-9]{4,8}"
+          minLength={4}
+          maxLength={8}
+          placeholder="Operator PIN (4–8 digits)"
+          className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100"
+          value={operatorPin}
+          onChange={(event) => setOperatorPin(event.target.value)}
+          required
+        />
+        <button type="submit" className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium">
+          Save operator PIN
         </button>
       </form>
 

@@ -76,7 +76,8 @@ function initializeSchema() {
 
     CREATE TABLE IF NOT EXISTS sessions (
       token TEXT PRIMARY KEY,
-      expires_at INTEGER NOT NULL
+      expires_at INTEGER NOT NULL,
+      role TEXT NOT NULL DEFAULT 'admin'
     );
 
     CREATE TABLE IF NOT EXISTS map_pins (
@@ -100,6 +101,11 @@ function initializeSchema() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
+
+  const sessionColumns = db.prepare('PRAGMA table_info(sessions)').all();
+  if (!sessionColumns.some((column) => column.name === 'role')) {
+    db.exec("ALTER TABLE sessions ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'");
+  }
 
   seedIfEmpty();
   ensureSettings();
@@ -478,13 +484,27 @@ function seedMapPinsIfEmpty() {
 
 function ensureSettings() {
   const existing = db.prepare("SELECT value FROM settings WHERE key = 'pin_hash'").get();
-  if (existing) return;
+  if (existing) {
+    const operatorPin = db.prepare("SELECT value FROM settings WHERE key = 'operator_pin_hash'").get()?.value;
+    if (!operatorPin) {
+      const salt = crypto.randomBytes(16).toString('hex');
+      const hash = crypto.scryptSync('5678', salt, 32).toString('hex');
+      const upsert = db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value');
+      upsert.run('operator_pin_salt', salt);
+      upsert.run('operator_pin_hash', hash);
+    }
+    return;
+  }
   const salt = crypto.randomBytes(16).toString('hex');
   const hash = crypto.scryptSync('1234', salt, 32).toString('hex');
   const insert = db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)');
   const setMany = db.transaction(() => {
     insert.run('pin_salt', salt);
     insert.run('pin_hash', hash);
+    const operatorSalt = crypto.randomBytes(16).toString('hex');
+    const operatorHash = crypto.scryptSync('5678', operatorSalt, 32).toString('hex');
+    insert.run('operator_pin_salt', operatorSalt);
+    insert.run('operator_pin_hash', operatorHash);
     insert.run('camp_name', 'Emergency Camp');
     insert.run('hotspot_ip', '192.168.137.1');
     insert.run('hotspot_ssid', 'EMERGENCY-NET');

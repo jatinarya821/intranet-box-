@@ -23,23 +23,58 @@ export function verifyPin(pin) {
   return crypto.timingSafeEqual(a, b);
 }
 
-export function issueToken() {
+function verifyStoredPin(pin, hashKey, saltKey) {
+  const salt = setting(saltKey);
+  const expected = setting(hashKey);
+  if (!salt || !expected || pin == null || String(pin).length < 4) return false;
+  const actual = hashPin(pin, salt);
+  const a = Buffer.from(actual, 'hex');
+  const b = Buffer.from(expected, 'hex');
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+export function verifyOperatorPin(pin) {
+  return verifyStoredPin(pin, 'operator_pin_hash', 'operator_pin_salt');
+}
+
+export function setOperatorPin(pin) {
+  const next = String(pin || '');
+  if (!/^\d{4,8}$/.test(next)) return { error: 'Operator PIN must be 4 to 8 digits' };
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = hashPin(next, salt);
+  const db = getDb();
+  const update = db.prepare('UPDATE settings SET value = ? WHERE key = ?');
+  update.run(salt, 'operator_pin_salt');
+  update.run(hash, 'operator_pin_hash');
+  return { ok: true };
+}
+
+export function issueToken(role = 'admin') {
   const db = getDb();
   const token = crypto.randomBytes(24).toString('hex');
   const expiresAt = Date.now() + TOKEN_MS;
   db.prepare('DELETE FROM sessions WHERE expires_at < ?').run(Date.now());
-  db.prepare('INSERT INTO sessions (token, expires_at) VALUES (?, ?)').run(token, expiresAt);
-  return { token, expiresAt };
+  db.prepare('INSERT INTO sessions (token, expires_at, role) VALUES (?, ?, ?)').run(token, expiresAt, role);
+  return { token, expiresAt, role };
+}
+
+export function getSession(request) {
+  const header = request.headers.get('authorization') || '';
+  const token = header.replace(/^Bearer\s+/i, '').trim();
+  if (!token) return null;
+  const db = getDb();
+  const row = db.prepare('SELECT token, expires_at, role FROM sessions WHERE token = ?').get(token);
+  if (!row || row.expires_at < Date.now()) return null;
+  return row;
 }
 
 export function isAdminRequest(request) {
-  const header = request.headers.get('authorization') || '';
-  const token = header.replace(/^Bearer\s+/i, '').trim();
-  if (!token) return false;
-  const db = getDb();
-  const row = db.prepare('SELECT expires_at FROM sessions WHERE token = ?').get(token);
-  if (!row || row.expires_at < Date.now()) return false;
-  return true;
+  return getSession(request)?.role === 'admin';
+}
+
+export function hasRole(request, roles) {
+  const role = getSession(request)?.role;
+  return Boolean(role && roles.includes(role));
 }
 
 export function changePin(currentPin, newPin) {
