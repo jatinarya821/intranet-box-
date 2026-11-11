@@ -124,24 +124,6 @@ Write-Host "[3/4] Starting Intranet Box server..." -ForegroundColor Cyan
 
 Set-Location $scriptDir
 
-# Stop older Intranet Box production servers so localhost and LAN clients
-# cannot be routed to different builds.
-$scriptDirPattern = [regex]::Escape($scriptDir)
-$serverProcesses = Get-CimInstance Win32_Process -Filter "Name='node.exe'" |
-    Where-Object {
-        $_.CommandLine -match $scriptDirPattern -and
-        $_.CommandLine -match "next.*start.*-p\s+$Port(?:\s|$)"
-    }
-
-foreach ($process in $serverProcesses) {
-    Write-Host "  Stopping previous server process $($process.ProcessId)..." -ForegroundColor Yellow
-    Stop-Process -Id ([int]$process.ProcessId) -Force -ErrorAction SilentlyContinue
-}
-
-if ($serverProcesses) {
-    Start-Sleep -Seconds 1
-}
-
 # Always rebuild before serving production so connected devices do not receive
 # a stale client bundle after source changes.
 $nextDir = Join-Path $scriptDir ".next"
