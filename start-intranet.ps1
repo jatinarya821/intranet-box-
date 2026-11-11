@@ -1,4 +1,4 @@
-# ============================================================
+﻿# ============================================================
 #  Disaster-Ready Offline Intranet in a Box — Windows Startup
 # ============================================================
 #  This script:
@@ -117,25 +117,31 @@ if ($hotspotIp) {
 Write-Host "  All detected IPs: $($ipAddresses -join ', ')" -ForegroundColor DarkGray
 
 # ----------------------------
-# Step 3: Build (if needed) and start server
+# Step 3: Clean stale locks & free port
 # ----------------------------
 Write-Host ""
-Write-Host "[3/4] Starting Intranet Box server..." -ForegroundColor Cyan
+Write-Host "[3/4] Preparing server environment..." -ForegroundColor Cyan
 
 Set-Location $scriptDir
 
-# Always rebuild before serving production so connected devices do not receive
-# a stale client bundle after source changes.
-$nextDir = Join-Path $scriptDir ".next"
-Write-Host "  Building production app for LAN clients..." -ForegroundColor Yellow
-npm run build
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "  [!] Build failed. Server was not started." -ForegroundColor Red
-    exit 1
+# 1. Clean stale Next.js dev lock if present
+$lockFile = Join-Path $scriptDir ".next\dev\lock"
+if (Test-Path $lockFile) {
+    Write-Host "  [i] Removing stale lock file..." -ForegroundColor DarkGray
+    Remove-Item -Path $lockFile -Force -ErrorAction SilentlyContinue
+}
+
+# 2. Check if port is already occupied and free it
+$occupied = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
+if ($occupied) {
+    $busyPid = $occupied.OwningProcess | Select-Object -First 1
+    Write-Host "  [i] Port $Port is currently held by PID $busyPid. Stopping it..." -ForegroundColor Yellow
+    taskkill /PID $busyPid /F 2>&1 | Out-Null
+    Start-Sleep -Seconds 1
 }
 
 # ----------------------------
-# Step 4: Display connection info
+# Step 4: Display connection info and start server
 # ----------------------------
 Write-Host ""
 Write-Host "=============================================" -ForegroundColor Green
@@ -158,10 +164,6 @@ Write-Host ""
 Write-Host "  Press Ctrl+C to stop the server." -ForegroundColor DarkGray
 Write-Host ""
 
-# Start the server (binds to all interfaces so LAN devices can reach it)
+# Start the server bound to 0.0.0.0 so all connected Wi-Fi devices can access it
 $env:HOSTNAME = "0.0.0.0"
-if (Test-Path (Join-Path $nextDir "BUILD_ID")) {
-    npx next start -p $Port -H 0.0.0.0
-} else {
-    npx next dev -p $Port -H 0.0.0.0
-}
+npx next dev -p $Port -H 0.0.0.0
