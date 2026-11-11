@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 
 const DB_PATH = path.join(process.cwd(), 'data', 'intranet.db');
 
@@ -67,9 +68,43 @@ function initializeSchema() {
       message TEXT NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS sessions (
+      token TEXT PRIMARY KEY,
+      expires_at INTEGER NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS map_pins (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      label TEXT NOT NULL,
+      type TEXT NOT NULL,
+      x_pct REAL NOT NULL,
+      y_pct REAL NOT NULL,
+      notes TEXT DEFAULT '',
+      capacity INTEGER,
+      current_count INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS resource_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      resource_id INTEGER,
+      name TEXT NOT NULL,
+      old_qty INTEGER,
+      new_qty INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   seedIfEmpty();
+  ensureSettings();
+  seedMapPinsIfEmpty();
+  seedExtraArticles();
 }
 
 function seedIfEmpty() {
@@ -354,6 +389,123 @@ function seedIfEmpty() {
     'info',
     'The Offline Intranet is now active. All residents in this area can access emergency information, maps, and resources through this portal. Stay safe.'
   );
+}
+
+const EXTRA_ARTICLES = [
+  ['Sanitation', 'Emergency Latrine Setup', `**Field Latrine Basics**
+
+**Placement:**
+- At least 30 metres downhill from drinking water
+- Separate facilities for women and men
+- Handwashing water and soap at the exit
+
+**Daily care:**
+1. Add ash or dry soil after each use to reduce smell
+2. Keep the cover on when not in use
+3. Empty or close the pit before it fills to 0.5 m from the top
+4. Mark closed pits so nobody digs there
+
+**Handwashing:**
+- Wet hands, soap for 20 seconds, rinse with clean water
+- Do this before food and after the latrine`],
+
+  ['Child Safety', 'Keeping Children Safe in a Camp', `**Child Safety in a Relief Camp**
+
+**At registration:**
+- Record the child's name, age, and the adult they arrived with
+- Give the family a matching wristband or written camp ID if available
+
+**In the camp:**
+- Keep a child-friendly corner away from the road and the kitchen fire
+- Do not leave young children alone near water, rubble, or vehicles
+- Teach children the camp name and a meeting point if they get separated
+
+**If a child is missing:**
+1. Note clothing, age, and last seen location
+2. Tell the registration desk immediately
+3. Add them to the person registry as Missing`],
+
+  ['Legal Rights', 'Documents to Protect After a Disaster', `**Papers Worth Saving**
+
+Keep these dry, in a plastic bag, with the person who can travel:
+
+- Government photo ID (Aadhaar, voter card, or passport)
+- Ration card and land or house papers
+- School certificates and medical prescriptions
+- Bank passbook or account number written on paper
+- Phone numbers of family, written by hand
+
+**If documents are lost:**
+- Register at the camp anyway. Identity can be confirmed later.
+- Ask the camp commander which local office is issuing duplicate certificates.
+- Do not pay a stranger who offers to "fix" papers for cash.`],
+];
+
+function seedExtraArticles() {
+  const insert = db.prepare('INSERT INTO articles (category, title, content) VALUES (?, ?, ?)');
+  const exists = db.prepare('SELECT id FROM articles WHERE title = ?');
+  const insertMissing = db.transaction((items) => {
+    for (const [category, title, content] of items) {
+      if (!exists.get(title)) insert.run(category, title, content);
+    }
+  });
+  insertMissing(EXTRA_ARTICLES);
+}
+
+const DEFAULT_PINS = [
+  ['Shelter A — Government School', 'shelter', 30, 25, 'Main road, north of the river. Follow the school sign.', 200, 145],
+  ['Shelter B — Community Hall', 'shelter', 65, 55, 'East zone, beside the market lane.', 150, 98],
+  ['Medical Camp — PHC Building', 'medical', 48, 35, 'Primary health centre. Open for injuries and fever.', null, 0],
+  ['Food Distribution — Main Square', 'food', 20, 60, 'Rations issued morning and evening.', null, 0],
+  ['Water Point — Tanker Station', 'water', 75, 20, 'Tanker refills at dawn. Bring your own container.', null, 0],
+  ['Water Point — Temple Tank', 'water', 55, 75, 'Boil this water before drinking.', null, 0],
+  ['Danger — Bridge Submerged', 'danger', 40, 70, 'Do not cross. Use the school road instead.', null, 0],
+  ['Danger — Landslide Risk Zone', 'danger', 15, 40, 'Stay off the hillside after heavy rain.', null, 0],
+  ['Control HQ', 'hq', 50, 50, 'Camp commander and registration desk.', null, 0],
+];
+
+function seedMapPinsIfEmpty() {
+  const count = db.prepare('SELECT COUNT(*) as count FROM map_pins').get();
+  if (count.count > 0) return;
+  const insert = db.prepare(
+    'INSERT INTO map_pins (label, type, x_pct, y_pct, notes, capacity, current_count) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  );
+  const insertMany = db.transaction((items) => {
+    for (const row of items) insert.run(...row);
+  });
+  insertMany(DEFAULT_PINS);
+}
+
+function ensureSettings() {
+  const existing = db.prepare("SELECT value FROM settings WHERE key = 'pin_hash'").get();
+  if (existing) return;
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync('1234', salt, 32).toString('hex');
+  const insert = db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)');
+  const setMany = db.transaction(() => {
+    insert.run('pin_salt', salt);
+    insert.run('pin_hash', hash);
+    insert.run('camp_name', 'Emergency Camp');
+    insert.run('hotspot_ip', '192.168.137.1');
+    insert.run('hotspot_ssid', 'EMERGENCY-NET');
+  });
+  setMany();
+}
+
+export function reseedOperational() {
+  const database = getDb();
+  database.exec(`
+    DELETE FROM alerts;
+    DELETE FROM articles;
+    DELETE FROM persons;
+    DELETE FROM resources;
+    DELETE FROM bulletin_posts;
+    DELETE FROM resource_log;
+    DELETE FROM map_pins;
+  `);
+  seedIfEmpty();
+  seedMapPinsIfEmpty();
+  seedExtraArticles();
 }
 
 export default getDb;

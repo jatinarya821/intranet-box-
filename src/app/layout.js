@@ -23,18 +23,18 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-red-500 selection:text-white">
+    <html lang="en" className="dark h-full">
+      <body className="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-red-500 selection:text-white w-full overflow-x-hidden">
         {/* Global Critical Alert Bar */}
         <AlertBanner />
 
-        {/* Core Layout Shell */}
-        <div className="flex flex-1 min-h-0 relative">
+        {/* Core Layout Shell: flex-col on mobile, flex-row on desktop */}
+        <div className="flex flex-col md:flex-row flex-1 min-h-0 w-full relative">
           {/* Desktop Sidebar + Mobile Top Bar */}
           <Sidebar />
 
-          {/* Main Viewport: extra bottom padding on mobile for BottomNav */}
-          <main className="flex-1 p-3.5 sm:p-5 md:p-8 overflow-y-auto pb-24 md:pb-8">
+          {/* Main Viewport: min-w-0 prevents flexbox horizontal blowout */}
+          <main className="flex-1 min-w-0 w-full p-3 sm:p-5 md:p-8 overflow-y-auto overflow-x-hidden pb-24 md:pb-8">
             {children}
           </main>
         </div>

@@ -1,13 +1,17 @@
 'use client';
 import { useEffect, useState } from 'react';
+import PinGate, { adminFetch, hasAdminToken } from '@/components/PinGate';
 
-const CATEGORIES = ['All', 'First Aid', 'Agriculture', 'Health', 'Disaster SOPs'];
+const CATEGORIES = ['All', 'First Aid', 'Agriculture', 'Health', 'Disaster SOPs', 'Sanitation', 'Child Safety', 'Legal Rights'];
 
 const CAT_ICONS = {
   'First Aid': '🩺',
   'Agriculture': '🌾',
   'Health': '💊',
   'Disaster SOPs': '📋',
+  'Sanitation': '🚽',
+  'Child Safety': '🧒',
+  'Legal Rights': '📄',
 };
 
 function renderContent(text) {
@@ -27,13 +31,36 @@ export default function KnowledgePage() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ category: 'First Aid', title: '', content: '' });
+  const [gateOpen, setGateOpen] = useState(false);
+  const [pending, setPending] = useState(null);
 
-  useEffect(() => {
+  const loadArticles = () => {
     fetch('/api/articles')
       .then(r => r.json())
       .then(data => { setArticles(data); setLoading(false); })
       .catch(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { loadArticles(); }, []);
+
+  const handleCreate = (event) => {
+    event.preventDefault();
+    const publish = async () => {
+      const res = await adminFetch('/api/articles', { method: 'POST', body: JSON.stringify(form) });
+      if (!res.ok) return;
+      setForm({ category: 'First Aid', title: '', content: '' });
+      setShowForm(false);
+      loadArticles();
+    };
+    if (!hasAdminToken()) {
+      setPending(() => publish);
+      setGateOpen(true);
+      return;
+    }
+    publish();
+  };
 
   const filtered = articles.filter(a => {
     const matchCat = activeCategory === 'All' || a.category === activeCategory;
@@ -50,10 +77,46 @@ export default function KnowledgePage() {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-100">📚 Knowledge Base</h1>
-        <p className="text-slate-400 text-sm mt-0.5">Preloaded offline guides · First aid, agriculture, health, disaster SOPs</p>
+      <div className="mb-6 flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-100">📚 Knowledge Base</h1>
+          <p className="text-slate-400 text-sm mt-0.5">Preloaded offline guides · First aid, agriculture, health, disaster SOPs</p>
+        </div>
+        <button
+          onClick={() => setShowForm((open) => !open)}
+          className="shrink-0 px-3 py-2 rounded-lg bg-blue-600 text-white text-sm"
+        >
+          {showForm ? 'Close' : '+ Guide'}
+        </button>
       </div>
+
+      {showForm && (
+        <form onSubmit={handleCreate} className="mb-5 bg-slate-800/60 border border-slate-700 rounded-xl p-4 space-y-3">
+          <select
+            className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm"
+            value={form.category}
+            onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}
+          >
+            {CATEGORIES.filter((cat) => cat !== 'All').map((cat) => <option key={cat}>{cat}</option>)}
+          </select>
+          <input
+            required
+            placeholder="Guide title"
+            className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm"
+            value={form.title}
+            onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
+          />
+          <textarea
+            required
+            rows={5}
+            placeholder="Steps and warnings. Use **bold** for headings."
+            className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm"
+            value={form.content}
+            onChange={(event) => setForm((current) => ({ ...current, content: event.target.value }))}
+          />
+          <button type="submit" className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm">Save guide</button>
+        </form>
+      )}
 
       {/* Search */}
       <div className="mb-4">
@@ -134,6 +197,16 @@ export default function KnowledgePage() {
           </div>
         )
       )}
+      <PinGate
+        open={gateOpen}
+        onClose={() => { setGateOpen(false); setPending(null); }}
+        onUnlocked={() => {
+          setGateOpen(false);
+          const action = pending;
+          setPending(null);
+          if (action) action();
+        }}
+      />
     </div>
   );
 }

@@ -12,12 +12,14 @@ const navItems = [
   { href: '/inventory', label: 'Supply Inventory', icon: '📦', badge: null },
   { href: '/bulletin', label: 'Bulletin Board', icon: '💬', badge: null },
   { href: '/connect', label: 'Hotspot / QR', icon: '📱', badge: null },
+  { href: '/admin', label: 'Camp Settings', icon: '⚙️', badge: null },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeAlerts, setActiveAlerts] = useState(0);
+  const [campName, setCampName] = useState('Emergency Camp');
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -28,6 +30,9 @@ export default function Sidebar() {
       } catch {}
     };
     fetchStatus();
+    fetch('/api/settings').then((res) => res.json()).then((data) => {
+      if (data.camp_name) setCampName(data.camp_name);
+    }).catch(() => {});
     const interval = setInterval(fetchStatus, 15000);
     return () => clearInterval(interval);
   }, []);
@@ -35,14 +40,14 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Top Header (compact, thumb-friendly) */}
-      <header className="md:hidden flex items-center justify-between bg-slate-950/90 backdrop-blur border-b border-slate-800/80 px-4 py-2.5 sticky top-0 z-30">
+      <header className="md:hidden flex items-center justify-between bg-slate-950/90 backdrop-blur border-b border-slate-800/80 px-4 py-2.5 sticky top-0 z-30 w-full shrink-0">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-red-600/20 border border-red-500/40 flex items-center justify-center text-sm">
             🚨
           </div>
           <div>
-            <div className="font-bold text-sm tracking-tight text-white leading-tight">
-              IntranetBox
+            <div className="font-bold text-sm tracking-tight text-white leading-tight truncate max-w-[46vw]">
+              {campName}
             </div>
             <div className="text-[10px] text-emerald-400 font-mono flex items-center gap-1 leading-none">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -151,7 +156,7 @@ export default function Sidebar() {
             </div>
             <div>
               <div className="text-slate-100 font-extrabold text-base tracking-tight leading-none">
-                IntranetBox
+                {campName}
               </div>
               <div className="text-[11px] text-slate-400 mt-1">Emergency Server</div>
             </div>

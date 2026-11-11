@@ -16,6 +16,9 @@ export async function POST(request) {
     const db = getDb();
     const { author, message } = await request.json();
     if (!message) return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+    if (String(message).length > 500) {
+      return NextResponse.json({ error: 'Message must be 500 characters or less' }, { status: 400 });
+    }
     const result = db.prepare(
       'INSERT INTO bulletin_posts (author, message) VALUES (?, ?)'
     ).run(author || 'Anonymous', message);

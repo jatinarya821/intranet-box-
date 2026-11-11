@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import getDb from '@/lib/db';
+import { isAdminRequest } from '@/lib/auth';
 
 export async function GET(request) {
   try {
@@ -30,10 +31,16 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
+    if (!isAdminRequest(request)) {
+      return NextResponse.json({ error: 'Admin PIN required' }, { status: 401 });
+    }
     const db = getDb();
     const { category, title, content } = await request.json();
     if (!category || !title || !content) {
       return NextResponse.json({ error: 'Category, title and content are required' }, { status: 400 });
+    }
+    if (String(title).length > 160 || String(content).length > 8000) {
+      return NextResponse.json({ error: 'Title or article is too long' }, { status: 400 });
     }
     const result = db.prepare(
       'INSERT INTO articles (category, title, content) VALUES (?, ?, ?)'

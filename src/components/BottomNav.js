@@ -15,6 +15,7 @@ const moreItems = [
   { href: '/inventory', label: 'Supplies & Inventory', desc: 'Food, water, medicine stockpiles', icon: '📦' },
   { href: '/bulletin', label: 'Bulletin Board', desc: 'Community messages & notices', icon: '💬' },
   { href: '/connect', label: 'Wi-Fi Hotspot & QR', desc: 'Network guide & connection QR', icon: '📱' },
+  { href: '/admin', label: 'Camp Settings', desc: 'PIN, backup, and camp name', icon: '⚙️' },
 ];
 
 export default function BottomNav() {
@@ -99,9 +100,9 @@ export default function BottomNav() {
       {/* Persistent Bottom Bar */}
       <nav
         aria-label="Mobile Navigation"
-        className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-slate-800/80 px-2 py-1.5 safe-bottom"
+        className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-slate-800/80 px-2 py-1.5 safe-bottom w-full"
       >
-        <div className="flex items-center justify-around">
+        <div className="flex items-center justify-around max-w-md mx-auto">
           {mainTabs.map((tab) => {
             const active = pathname === tab.href;
             const isAlertTab = tab.href === '/alerts';

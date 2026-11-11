@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import PinGate, { adminFetch, hasAdminToken } from '@/components/PinGate';
 
 const CATEGORIES = ['All', 'Water', 'Food', 'Medicine', 'Shelter', 'Equipment'];
 const CAT_ICONS = { Water: '💧', Food: '🍱', Medicine: '💊', Shelter: '🏠', Equipment: '🔧' };
@@ -23,12 +24,17 @@ export default function InventoryPage() {
   const [editing, setEditing] = useState(null);
   const [editQty, setEditQty] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [log, setLog] = useState([]);
+  const [gateOpen, setGateOpen] = useState(false);
+  const [pending, setPending] = useState(null);
 
   const fetchResources = async () => {
     try {
       const res = await fetch('/api/resources');
       const data = await res.json();
       setResources(data);
+      const logRes = await fetch('/api/resource-log');
+      setLog(await logRes.json());
     } catch {}
     setLoading(false);
   };
@@ -63,10 +69,18 @@ export default function InventoryPage() {
     } catch {}
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (!confirm('Remove this resource?')) return;
-    await fetch(`/api/resources?id=${id}`, { method: 'DELETE' });
-    await fetchResources();
+    const remove = async () => {
+      const res = await adminFetch(`/api/resources?id=${id}`, { method: 'DELETE' });
+      if (res.ok) await fetchResources();
+    };
+    if (!hasAdminToken()) {
+      setPending(() => remove);
+      setGateOpen(true);
+      return;
+    }
+    remove();
   };
 
   const filtered = filter === 'All' ? resources : resources.filter(r => r.category === filter);
@@ -224,6 +238,30 @@ export default function InventoryPage() {
           ))}
         </div>
       )}
+
+      {log.length > 0 && (
+        <div className="mt-6 bg-slate-800/40 border border-slate-700/60 rounded-xl p-4">
+          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Recent quantity changes</h2>
+          <ul className="space-y-1">
+            {log.map((entry) => (
+              <li key={entry.id} className="text-xs text-slate-400">
+                {entry.name}: {entry.old_qty} → {entry.new_qty}
+                <span className="text-slate-600"> · {new Date(entry.created_at).toLocaleString()}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <PinGate
+        open={gateOpen}
+        onClose={() => { setGateOpen(false); setPending(null); }}
+        onUnlocked={() => {
+          setGateOpen(false);
+          const action = pending;
+          setPending(null);
+          if (action) action();
+        }}
+      />
     </div>
   );
 }

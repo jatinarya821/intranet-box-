@@ -34,24 +34,24 @@ export default function Dashboard() {
 
   const quickActions = [
     {
-      title: 'Check-In as Safe',
-      desc: 'Register yourself or find loved ones',
+      title: 'Check-In Safe',
+      desc: 'Register or find loved ones',
       href: '/registry',
       icon: '👤',
       bg: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20',
       actionText: 'Register Now',
     },
     {
-      title: 'Find Shelters & Water',
-      desc: 'View relief zones and danger roads',
+      title: 'Find Shelters',
+      desc: 'Relief zones & safe roads',
       href: '/map',
       icon: '🗺️',
       bg: 'bg-blue-500/10 border-blue-500/30 text-blue-300 hover:bg-blue-500/20',
       actionText: 'Open Map',
     },
     {
-      title: 'Emergency First Aid',
-      desc: 'CPR, bleeding, and snakebite SOPs',
+      title: 'First Aid Guides',
+      desc: 'CPR, bleeding & bite SOPs',
       href: '/knowledge',
       icon: '🩺',
       bg: 'bg-rose-500/10 border-rose-500/30 text-rose-300 hover:bg-rose-500/20',
@@ -59,7 +59,7 @@ export default function Dashboard() {
     },
     {
       title: 'Broadcast Alert',
-      desc: 'Publish urgent hazard warnings',
+      desc: 'Publish urgent warnings',
       href: '/alerts',
       icon: '🚨',
       bg: 'bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20',
@@ -138,70 +138,70 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
+    <div className="w-full max-w-6xl mx-auto space-y-5 sm:space-y-8 min-w-0">
       {/* Tactical Top Hero Banner */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-slate-800 p-5 sm:p-7 shadow-xl">
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-slate-800 p-4 sm:p-7 shadow-xl w-full min-w-0">
         <div className="absolute top-0 right-0 w-80 h-80 bg-red-600/5 rounded-full blur-3xl -z-10 pointer-events-none" />
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 uppercase">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 uppercase">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 Autonomous Node Live
               </span>
-              <span className="text-xs text-slate-400 font-mono">
+              <span className="text-[11px] sm:text-xs text-slate-400 font-mono">
                 SSID: <strong className="text-slate-200">EMERGENCY-NET</strong>
               </span>
               {currentTime && (
-                <span className="text-xs text-slate-500 font-mono">
+                <span className="text-[11px] sm:text-xs text-slate-500 font-mono">
                   · {currentTime}
                 </span>
               )}
             </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-              Disaster-Ready Intranet in a Box
+            <h1 className="text-xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight break-words">
+              Disaster-Ready Intranet
             </h1>
-            <p className="text-slate-400 text-xs sm:text-sm mt-1.5 max-w-2xl leading-relaxed">
-              Local offline emergency network. All guides, survivor lists, resource counts, and maps are stored locally on this machine with zero dependence on the internet.
+            <p className="text-slate-400 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
+              Autonomous emergency network. Guides, survivor lists, resource counts, and maps stored locally on this machine with zero internet.
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="w-full sm:w-auto shrink-0">
             <Link
               href="/connect"
               className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs sm:text-sm font-semibold transition-all shadow-md flex items-center justify-center gap-2"
             >
-              <span>📱</span> Connect Others
+              <span>📱</span> Connect Devices (QR)
             </Link>
           </div>
         </div>
       </section>
 
       {/* Immediate Response 1-Tap Quick Action Row */}
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-            <span>⚡</span> Priority Field Actions
+      <section className="w-full min-w-0">
+        <div className="flex items-center justify-between mb-2.5 px-0.5">
+          <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <span>⚡</span> Priority Actions
           </h2>
-          <span className="text-[11px] text-slate-500">Tap for instant navigation</span>
+          <span className="text-[11px] text-slate-500">1-Tap Navigation</span>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3.5">
           {quickActions.map((action) => (
             <Link
               key={action.title}
               href={action.href}
-              className={`p-3.5 sm:p-4 rounded-xl border transition-all active:scale-95 flex flex-col justify-between ${action.bg}`}
+              className={`p-3 sm:p-4 rounded-xl border transition-all active:scale-95 flex flex-col justify-between min-w-0 break-words ${action.bg}`}
             >
               <div>
-                <span className="text-2xl sm:text-3xl mb-2 block">{action.icon}</span>
-                <div className="font-bold text-xs sm:text-sm text-slate-100">{action.title}</div>
-                <div className="text-[11px] text-slate-400 mt-1 line-clamp-2 leading-snug">
+                <span className="text-2xl sm:text-3xl mb-1.5 block">{action.icon}</span>
+                <div className="font-bold text-xs sm:text-sm text-slate-100 truncate">{action.title}</div>
+                <div className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 line-clamp-2 leading-snug">
                   {action.desc}
                 </div>
               </div>
-              <div className="mt-3 pt-2 border-t border-white/10 flex items-center justify-between text-[11px] font-semibold">
-                <span>{action.actionText}</span>
+              <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-[10px] sm:text-[11px] font-semibold">
+                <span className="truncate">{action.actionText}</span>
                 <span>→</span>
               </div>
             </Link>
@@ -210,21 +210,21 @@ export default function Dashboard() {
       </section>
 
       {/* Live System Metrics Bar */}
-      <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <section className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 w-full min-w-0">
         {[
           { label: 'Active Alerts', val: stats?.alertCount ?? 0, color: 'text-red-400', border: 'border-red-500/20' },
-          { label: 'Registered Citizens', val: stats?.personCount ?? 0, color: 'text-blue-400', border: 'border-blue-500/20' },
+          { label: 'Registered', val: stats?.personCount ?? 0, color: 'text-blue-400', border: 'border-blue-500/20' },
           { label: 'Reported Missing', val: stats?.missingCount ?? 0, color: (stats?.missingCount || 0) > 0 ? 'text-amber-400 animate-pulse' : 'text-slate-400', border: 'border-amber-500/20' },
           { label: 'Relief Resources', val: stats?.resourceCount ?? 0, color: 'text-purple-400', border: 'border-purple-500/20' },
         ].map((metric) => (
           <div
             key={metric.label}
-            className={`p-3.5 sm:p-4 rounded-xl bg-slate-900/60 border ${metric.border} backdrop-blur flex flex-col items-center justify-center text-center`}
+            className={`p-3 sm:p-4 rounded-xl bg-slate-900/60 border ${metric.border} backdrop-blur flex flex-col items-center justify-center text-center min-w-0`}
           >
-            <div className={`text-2xl sm:text-3xl font-black ${metric.color}`}>
+            <div className={`text-xl sm:text-3xl font-black ${metric.color} truncate`}>
               {loading ? '...' : metric.val}
             </div>
-            <div className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold mt-1">
+            <div className="text-[10px] sm:text-[11px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5 truncate max-w-full">
               {metric.label}
             </div>
           </div>
@@ -234,29 +234,29 @@ export default function Dashboard() {
       {/* Latest Incident / Alert Highlight */}
       {stats?.latestAlert && (
         <section
-          className={`rounded-2xl border p-4 sm:p-5 transition-all severity-${stats.latestAlert.severity}`}
+          className={`rounded-2xl border p-4 sm:p-5 transition-all w-full min-w-0 severity-${stats.latestAlert.severity}`}
         >
-          <div className="flex items-start justify-between gap-3 flex-wrap sm:flex-nowrap">
-            <div className="flex items-start gap-3.5">
-              <span className="text-3xl sm:text-4xl shrink-0 mt-0.5">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+            <div className="flex items-start gap-3 min-w-0 flex-1">
+              <span className="text-2xl sm:text-4xl shrink-0 mt-0.5">
                 {stats.latestAlert.severity === 'critical' ? '🚨' :
                  stats.latestAlert.severity === 'warning' ? '⚠️' :
                  stats.latestAlert.severity === 'info' ? 'ℹ️' : '✅'}
               </span>
-              <div>
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-extrabold text-base sm:text-lg text-white">
+                  <span className="font-extrabold text-sm sm:text-lg text-white break-words">
                     {stats.latestAlert.title}
                   </span>
-                  <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-black/40 border border-white/20">
-                    Latest Broadcast
+                  <span className="text-[9px] sm:text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-black/40 border border-white/20">
+                    Latest
                   </span>
                 </div>
-                <p className="text-slate-200 text-xs sm:text-sm mt-1 leading-relaxed max-w-3xl">
+                <p className="text-slate-200 text-xs sm:text-sm mt-1 leading-relaxed break-words">
                   {stats.latestAlert.body}
                 </p>
-                <div className="text-[11px] text-slate-400 mt-2">
-                  Broadcasted: {new Date(stats.latestAlert.created_at).toLocaleString()}
+                <div className="text-[10px] sm:text-[11px] text-slate-400 mt-2">
+                  {new Date(stats.latestAlert.created_at).toLocaleString()}
                 </div>
               </div>
             </div>
@@ -271,19 +271,19 @@ export default function Dashboard() {
       )}
 
       {/* Primary Emergency Operations Grid */}
-      <section className="space-y-3">
-        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-          Primary Emergency Operations
+      <section className="space-y-2.5 sm:space-y-3 w-full min-w-0">
+        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-0.5">
+          Emergency Operations
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full min-w-0">
           {primaryModules.map((mod) => (
             <Link
               key={mod.href}
               href={mod.href}
-              className={`group p-4 sm:p-5 rounded-2xl border transition-all active:scale-[0.98] ${mod.border}`}
+              className={`group p-4 sm:p-5 rounded-2xl border transition-all active:scale-[0.98] min-w-0 ${mod.border}`}
             >
               <div className="flex items-start justify-between gap-2 mb-2">
-                <span className="text-3xl p-2 rounded-xl bg-slate-950/70 border border-white/5 group-hover:scale-110 transition-transform">
+                <span className="text-2xl sm:text-3xl p-2 rounded-xl bg-slate-950/70 border border-white/5 group-hover:scale-110 transition-transform">
                   {mod.icon}
                 </span>
                 {mod.badge && (
@@ -292,15 +292,15 @@ export default function Dashboard() {
                   </span>
                 )}
               </div>
-              <h3 className="font-bold text-base text-white group-hover:text-red-400 transition-colors">
+              <h3 className="font-bold text-sm sm:text-base text-white group-hover:text-red-400 transition-colors truncate">
                 {mod.title}
               </h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed line-clamp-2">
                 {mod.desc}
               </p>
-              <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-medium text-slate-300">
-                <span className="text-slate-500 font-mono text-[11px]">{mod.stat}</span>
-                <span className="group-hover:translate-x-1 transition-transform text-red-400">Launch Module →</span>
+              <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-medium text-slate-300">
+                <span className="text-slate-500 font-mono text-[10px] sm:text-[11px] truncate">{mod.stat}</span>
+                <span className="group-hover:translate-x-1 transition-transform text-red-400 shrink-0">Open →</span>
               </div>
             </Link>
           ))}
@@ -308,27 +308,27 @@ export default function Dashboard() {
       </section>
 
       {/* Secondary Resources & Tools Grid */}
-      <section className="space-y-3">
-        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-          Field Reference & Community Tools
+      <section className="space-y-2.5 sm:space-y-3 w-full min-w-0">
+        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-0.5">
+          Guides & Tools
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3.5 w-full min-w-0">
           {secondaryModules.map((mod) => (
             <Link
               key={mod.href}
               href={mod.href}
-              className={`group p-4 rounded-xl border transition-all active:scale-[0.98] ${mod.border}`}
+              className={`group p-3.5 sm:p-4 rounded-xl border transition-all active:scale-[0.98] min-w-0 ${mod.border}`}
             >
-              <div className="text-2xl mb-2">{mod.icon}</div>
-              <h3 className="font-bold text-sm text-slate-100 group-hover:text-blue-300 transition-colors">
+              <div className="text-xl sm:text-2xl mb-1.5">{mod.icon}</div>
+              <h3 className="font-bold text-xs sm:text-sm text-slate-100 group-hover:text-blue-300 transition-colors truncate">
                 {mod.title}
               </h3>
-              <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+              <p className="text-[11px] text-slate-400 mt-1 leading-relaxed line-clamp-2">
                 {mod.desc}
               </p>
-              <div className="mt-3 pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-500">
-                <span>{mod.stat}</span>
-                <span className="text-slate-400 group-hover:text-white">→</span>
+              <div className="mt-2.5 pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-500">
+                <span className="truncate">{mod.stat}</span>
+                <span className="text-slate-400 group-hover:text-white shrink-0">→</span>
               </div>
             </Link>
           ))}
@@ -336,11 +336,11 @@ export default function Dashboard() {
       </section>
 
       {/* Footer System Status Banner */}
-      <footer className="rounded-xl p-4 bg-slate-900/40 border border-slate-800/70 text-center text-xs text-slate-500 space-y-1">
+      <footer className="rounded-xl p-3.5 sm:p-4 bg-slate-900/40 border border-slate-800/70 text-center text-[11px] sm:text-xs text-slate-500 space-y-1 w-full min-w-0">
         <div>
           Autonomous Emergency Server Node · Offline SQLite Store · Local Hotspot Mode
         </div>
-        <div className="text-[11px] text-slate-600">
+        <div className="text-[10px] sm:text-[11px] text-slate-600">
           Connected devices only need a browser · Zero internet or mobile data charges
         </div>
       </footer>

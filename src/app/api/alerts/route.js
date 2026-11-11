@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import getDb from '@/lib/db';
+import { isAdminRequest } from '@/lib/auth';
 
 export async function GET() {
   try {
@@ -13,10 +14,16 @@ export async function GET() {
 
 export async function POST(request) {
   try {
+    if (!isAdminRequest(request)) {
+      return NextResponse.json({ error: 'Admin PIN required' }, { status: 401 });
+    }
     const db = getDb();
     const { title, severity, body } = await request.json();
     if (!title || !body) {
       return NextResponse.json({ error: 'Title and body are required' }, { status: 400 });
+    }
+    if (String(title).length > 140 || String(body).length > 1000) {
+      return NextResponse.json({ error: 'Title or message is too long' }, { status: 400 });
     }
     const result = db.prepare(
       'INSERT INTO alerts (title, severity, body) VALUES (?, ?, ?)'
@@ -30,6 +37,9 @@ export async function POST(request) {
 
 export async function DELETE(request) {
   try {
+    if (!isAdminRequest(request)) {
+      return NextResponse.json({ error: 'Admin PIN required' }, { status: 401 });
+    }
     const db = getDb();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

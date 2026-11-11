@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import PinGate, { adminFetch, hasAdminToken } from '@/components/PinGate';
 
 const SEVERITIES = ['info', 'warning', 'critical', 'safe'];
 
@@ -17,6 +18,17 @@ export default function AlertsPage() {
   const [posting, setPosting] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState('');
+  const [gateOpen, setGateOpen] = useState(false);
+  const [pending, setPending] = useState(null);
+
+  const guard = (action) => {
+    if (!hasAdminToken()) {
+      setPending(() => action);
+      setGateOpen(true);
+      return;
+    }
+    action();
+  };
 
   const fetchAlerts = async () => {
     try {
@@ -36,31 +48,38 @@ export default function AlertsPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const handlePost = async (e) => {
+  const handlePost = (e) => {
     e.preventDefault();
-    setPosting(true);
-    setError('');
-    try {
-      const res = await fetch('/api/alerts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) throw new Error('Failed to post');
-      setForm({ title: '', severity: 'info', body: '' });
-      setShowForm(false);
-      await fetchAlerts();
-    } catch (e) {
-      setError('Failed to post alert');
-    } finally {
-      setPosting(false);
-    }
+    guard(async () => {
+      setPosting(true);
+      setError('');
+      try {
+        const res = await adminFetch('/api/alerts', {
+          method: 'POST',
+          body: JSON.stringify(form),
+        });
+        if (!res.ok) throw new Error('Failed to post');
+        setForm({ title: '', severity: 'info', body: '' });
+        setShowForm(false);
+        await fetchAlerts();
+      } catch {
+        setError('Failed to post alert. Admin PIN is required.');
+      } finally {
+        setPosting(false);
+      }
+    });
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (!confirm('Delete this alert?')) return;
-    await fetch(`/api/alerts?id=${id}`, { method: 'DELETE' });
-    await fetchAlerts();
+    guard(async () => {
+      const res = await adminFetch(`/api/alerts?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        setError('Delete needs the admin PIN.');
+        return;
+      }
+      await fetchAlerts();
+    });
   };
 
   return (
@@ -177,6 +196,16 @@ export default function AlertsPage() {
           })}
         </div>
       )}
+      <PinGate
+        open={gateOpen}
+        onClose={() => { setGateOpen(false); setPending(null); }}
+        onUnlocked={() => {
+          setGateOpen(false);
+          const action = pending;
+          setPending(null);
+          if (action) action();
+        }}
+      />
     </div>
   );
 }
