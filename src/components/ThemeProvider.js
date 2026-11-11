@@ -8,23 +8,16 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     const stored = window.localStorage.getItem('theme');
-    setTheme((current) => {
-      // Preserve a tap that happens before this effect runs on a slower device.
-      const next = current === 'dark' && (stored === 'light' || stored === 'dark')
-        ? stored
-        : current;
-      applyTheme(next);
-      return next;
-    });
+    const next = stored === 'light' || stored === 'dark' ? stored : 'dark';
+    setTheme(next);
+    applyTheme(next);
   }, []);
 
   const toggleTheme = () => {
-    setTheme((current) => {
-      const next = current === 'dark' ? 'light' : 'dark';
-      window.localStorage.setItem('theme', next);
-      applyTheme(next);
-      return next;
-    });
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    window.localStorage.setItem('theme', next);
+    applyTheme(next);
   };
 
   return (
