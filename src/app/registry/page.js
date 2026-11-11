@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react';
 
 const STATUSES = ['safe', 'missing', 'injured', 'unknown'];
 const STATUS_CONFIG = {
-  safe:    { label: 'Safe',    color: 'status-safe',    icon: '✅' },
-  missing: { label: 'Missing', color: 'status-missing', icon: '❓' },
-  injured: { label: 'Injured', color: 'status-injured', icon: '🤕' },
-  unknown: { label: 'Unknown', color: 'status-unknown', icon: '❔' },
+  safe:    { label: 'Safe',    color: 'status-safe',    icon: '✅', desc: 'Checked in & unharmed' },
+  missing: { label: 'Missing', color: 'status-missing', icon: '❓', desc: 'Unaccounted for' },
+  injured: { label: 'Injured', color: 'status-injured', icon: '🤕', desc: 'Needs medical attention' },
+  unknown: { label: 'Unknown', color: 'status-unknown', icon: '❔', desc: 'Awaiting verification' },
 };
 
 export default function RegistryPage() {
@@ -69,164 +69,269 @@ export default function RegistryPage() {
   }, {});
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-4xl mx-auto space-y-5">
+      {/* Page Title & Quick Action */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100">👤 Person Registry</h1>
-          <p className="text-slate-400 text-sm mt-0.5">Check-in survivors · Track missing persons · Search by name</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white flex items-center gap-2">
+            <span>👤</span> Survivor & Person Registry
+          </h1>
+          <p className="text-slate-400 text-xs sm:text-sm mt-1">
+            Check-in survivors · Track missing individuals · Searchable offline directory
+          </p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors"
-        >
-          {showForm ? '✕ Cancel' : '+ Register Person'}
-        </button>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => window.print()}
+            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-xs font-semibold border border-slate-700 transition-all flex items-center gap-1.5"
+            title="Print or save PDF report"
+          >
+            <span>🖨️</span>
+            <span className="hidden sm:inline">Print Report</span>
+          </button>
+
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs sm:text-sm font-semibold transition-all shadow-md flex items-center justify-center gap-1.5"
+          >
+            <span>{showForm ? '✕' : '+'}</span>
+            <span>{showForm ? 'Cancel' : 'Check-In Person'}</span>
+          </button>
+        </div>
       </div>
 
-      {/* Status summary cards */}
-      <div className="grid grid-cols-4 gap-2 mb-5">
+      {/* Touch-Friendly Status Filter Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         {STATUSES.map(s => {
           const cfg = STATUS_CONFIG[s];
+          const active = statusFilter === s;
           return (
             <button
               key={s}
-              onClick={() => setStatusFilter(statusFilter === s ? 'all' : s)}
-              className={`rounded-xl border p-3 text-center transition-all
-                ${statusFilter === s ? 'ring-2 ring-white/20 scale-105' : 'opacity-80 hover:opacity-100'}
-                ${cfg.color}`}
+              onClick={() => setStatusFilter(active ? 'all' : s)}
+              className={`p-3 rounded-2xl border text-left transition-all active:scale-95 flex items-center justify-between ${
+                active ? 'ring-2 ring-white/30 scale-[1.02] shadow-lg' : 'opacity-85 hover:opacity-100'
+              } ${cfg.color}`}
             >
-              <div className="text-xl mb-0.5">{cfg.icon}</div>
-              <div className="text-lg font-bold">{counts[s]}</div>
-              <div className="text-xs opacity-80">{cfg.label}</div>
+              <div>
+                <div className="text-xl mb-0.5">{cfg.icon}</div>
+                <div className="text-xs font-semibold uppercase tracking-wider">{cfg.label}</div>
+              </div>
+              <div className="text-2xl font-black">{counts[s]}</div>
             </button>
           );
         })}
       </div>
 
-      {/* Registration form */}
+      {/* Expandable Registration Form */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="mb-6 bg-slate-800/60 border border-slate-700 rounded-xl p-5 space-y-4">
-          <h2 className="font-semibold text-slate-200">Register Person</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-4 shadow-xl"
+        >
+          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h2 className="font-bold text-base text-white flex items-center gap-2">
+              <span>📝</span> Register Survivor or Report Person
+            </h2>
+            <span className="text-xs text-slate-500 font-mono">Form auto-saves to local SQLite</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label className="text-xs text-slate-400 block mb-1">Full Name *</label>
+              <label className="text-xs font-semibold text-slate-300 block mb-1">Full Name *</label>
               <input
-                className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm focus:outline-none focus:border-blue-500"
-                placeholder="Name..."
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-blue-500"
+                placeholder="e.g. Ramesh Kumar"
                 value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                 required
               />
             </div>
+
             <div>
-              <label className="text-xs text-slate-400 block mb-1">Age</label>
-              <input
-                type="number"
-                className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm focus:outline-none focus:border-blue-500"
-                placeholder="Age..."
-                value={form.age}
-                onChange={e => setForm(f => ({ ...f, age: e.target.value }))}
-              />
-            </div>
-            <div>
-              <label className="text-xs text-slate-400 block mb-1">Status</label>
+              <label className="text-xs font-semibold text-slate-300 block mb-1">Status *</label>
               <select
-                className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm focus:outline-none focus:border-blue-500"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-blue-500"
                 value={form.status}
                 onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
               >
                 {STATUSES.map(s => (
-                  <option key={s} value={s}>{STATUS_CONFIG[s].icon} {STATUS_CONFIG[s].label}</option>
+                  <option key={s} value={s}>
+                    {STATUS_CONFIG[s].icon} {STATUS_CONFIG[s].label} ({STATUS_CONFIG[s].desc})
+                  </option>
                 ))}
               </select>
             </div>
+
             <div>
-              <label className="text-xs text-slate-400 block mb-1">Current Location</label>
+              <label className="text-xs font-semibold text-slate-300 block mb-1">Age</label>
               <input
-                className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm focus:outline-none focus:border-blue-500"
-                placeholder="Shelter A, Room 3..."
+                type="number"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-blue-500"
+                placeholder="Age in years"
+                value={form.age}
+                onChange={e => setForm(f => ({ ...f, age: e.target.value }))}
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-slate-300 block mb-1">Current Camp / Location</label>
+              <input
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-blue-500"
+                placeholder="e.g. Shelter A, Room 3 or Village East"
                 value={form.location}
                 onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
               />
             </div>
+
             <div>
-              <label className="text-xs text-slate-400 block mb-1">Contact Number</label>
+              <label className="text-xs font-semibold text-slate-300 block mb-1">Phone / Relative Contact</label>
               <input
-                className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm focus:outline-none focus:border-blue-500"
-                placeholder="+91 9876543210"
+                type="tel"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-blue-500"
+                placeholder="e.g. +91 9876543210"
                 value={form.contact}
                 onChange={e => setForm(f => ({ ...f, contact: e.target.value }))}
               />
             </div>
+
             <div>
-              <label className="text-xs text-slate-400 block mb-1">Notes</label>
+              <label className="text-xs font-semibold text-slate-300 block mb-1">Medical or Identifying Notes</label>
               <input
-                className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm focus:outline-none focus:border-blue-500"
-                placeholder="Any notes..."
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-blue-500"
+                placeholder="e.g. Diabetic, wearing blue shirt"
                 value={form.notes}
                 onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
               />
             </div>
           </div>
+
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium transition-colors"
+            className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-bold transition-all shadow-lg active:scale-95"
           >
-            {submitting ? 'Registering…' : '✅ Register Person'}
+            {submitting ? 'Submitting to database...' : '✅ Save to Registry'}
           </button>
         </form>
       )}
 
-      {/* Search */}
-      <div className="mb-4">
+      {/* Prominent Search Bar */}
+      <div className="relative">
+        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base">🔍</span>
         <input
-          className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-slate-100 text-sm focus:outline-none focus:border-blue-500 placeholder-slate-500"
-          placeholder="🔍 Search by name, location, or contact..."
+          className="w-full bg-slate-900 border border-slate-700/80 rounded-2xl pl-10 pr-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-blue-500 placeholder-slate-500 shadow-inner"
+          placeholder="Search by person name, shelter location, or contact number..."
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
+        {search && (
+          <button
+            onClick={() => setSearch('')}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-xs px-1.5 py-0.5 rounded bg-slate-800"
+          >
+            Clear
+          </button>
+        )}
       </div>
 
-      {/* Persons list */}
+      {/* Results Header */}
+      <div className="flex items-center justify-between text-xs text-slate-400 px-1">
+        <span>
+          Showing {filtered.length} {statusFilter !== 'all' ? statusFilter : ''} person{filtered.length !== 1 ? 's' : ''}
+        </span>
+        {statusFilter !== 'all' && (
+          <button
+            onClick={() => setStatusFilter('all')}
+            className="text-blue-400 hover:underline"
+          >
+            Reset filter (Show all)
+          </button>
+        )}
+      </div>
+
+      {/* Person Cards List */}
       {loading ? (
-        <div className="text-slate-500 text-center py-10">Loading…</div>
+        <div className="text-slate-500 text-center py-12">Loading registry records…</div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-12 text-slate-500">
+        <div className="text-center py-16 bg-slate-900/40 border border-slate-800 rounded-2xl">
           <div className="text-4xl mb-3">👤</div>
-          <div>No persons found</div>
+          <div className="font-bold text-slate-300">No records found</div>
+          <div className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+            {search ? 'Try adjusting your search query' : 'Be the first to register someone using the button above'}
+          </div>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 gap-2.5">
           {filtered.map(person => {
             const cfg = STATUS_CONFIG[person.status] || STATUS_CONFIG.unknown;
             return (
-              <div key={person.id} className="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 flex items-center gap-4">
-                <div className="text-2xl shrink-0">{cfg.icon}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-slate-100">{person.name}</span>
-                    {person.age && <span className="text-slate-500 text-xs">Age {person.age}</span>}
-                    <span className={`text-xs px-2 py-0.5 rounded font-medium ${cfg.color}`}>
-                      {cfg.label}
-                    </span>
+              <div
+                key={person.id}
+                className="bg-slate-900/80 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-4 transition-all shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+              >
+                <div className="flex items-start gap-3.5 min-w-0">
+                  <div className="text-2xl sm:text-3xl p-2 rounded-xl bg-slate-950 border border-slate-800 shrink-0">
+                    {cfg.icon}
                   </div>
-                  <div className="flex gap-4 mt-1 text-xs text-slate-500 flex-wrap">
-                    {person.location && <span>📍 {person.location}</span>}
-                    {person.contact && <span>📞 {person.contact}</span>}
-                    {person.notes && <span>📝 {person.notes}</span>}
-                  </div>
-                  <div className="text-xs text-slate-600 mt-1">
-                    {new Date(person.created_at).toLocaleString()}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-base text-white truncate">
+                        {person.name}
+                      </span>
+                      {person.age && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 font-mono">
+                          Age {person.age}
+                        </span>
+                      )}
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${cfg.color}`}>
+                        {cfg.label}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-slate-400">
+                      {person.location && (
+                        <span className="flex items-center gap-1">
+                          <span>📍</span>
+                          <span className="text-slate-200">{person.location}</span>
+                        </span>
+                      )}
+                      {person.contact && (
+                        <a
+                          href={`tel:${person.contact}`}
+                          className="flex items-center gap-1 text-blue-400 hover:underline"
+                        >
+                          <span>📞</span>
+                          <span>{person.contact}</span>
+                        </a>
+                      )}
+                      {person.notes && (
+                        <span className="flex items-center gap-1 italic text-slate-400">
+                          <span>📝</span>
+                          <span>{person.notes}</span>
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="text-[11px] text-slate-500 mt-1.5 font-mono">
+                      Logged: {new Date(person.created_at).toLocaleString()}
+                    </div>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleStatusChange(person)}
-                  className="shrink-0 text-xs text-slate-500 hover:text-slate-300 border border-slate-700 rounded-lg px-2 py-1 transition-colors"
-                  title="Cycle status"
-                >
-                  Update
-                </button>
+
+                {/* Status Toggle Action Button */}
+                <div className="flex items-center gap-2 self-end sm:self-center shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/80 w-full sm:w-auto justify-between sm:justify-end">
+                  <span className="text-[11px] text-slate-500 sm:hidden">Tap to cycle status:</span>
+                  <button
+                    onClick={() => handleStatusChange(person)}
+                    className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 text-slate-300 transition-all flex items-center gap-1.5"
+                    title="Change status: Safe -> Missing -> Injured -> Unknown"
+                  >
+                    <span>🔄</span>
+                    <span>Next Status</span>
+                  </button>
+                </div>
               </div>
             );
           })}
