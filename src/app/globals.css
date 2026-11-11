@@ -12,14 +12,98 @@
   --foreground: #f1f5f9;
 }
 
+/*
+ * Most screens intentionally share the dark tactical utility classes. Keep
+ * those classes usable in light mode by translating their slate surfaces and
+ * muted text here instead of requiring every page to duplicate its markup.
+ */
+:root:not(.dark) body {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+:root:not(.dark) [class*="bg-slate-950"] {
+  background-color: #f1f5f9 !important;
+}
+:root:not(.dark) [class*="bg-slate-900"] {
+  background-color: #e8eef5 !important;
+}
+:root:not(.dark) [class*="bg-slate-800"] {
+  background-color: #dfe8f1 !important;
+}
+:root:not(.dark) [class*="bg-slate-700"] {
+  background-color: #d3dee9 !important;
+}
+
+:root:not(.dark) [class*="from-slate-950"],
+:root:not(.dark) [class*="to-slate-950"] {
+  --tw-gradient-from: #f1f5f9 var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(241 245 249 / 0) var(--tw-gradient-to-position);
+}
+:root:not(.dark) [class*="from-slate-900"],
+:root:not(.dark) [class*="to-slate-900"] {
+  --tw-gradient-from: #e8eef5 var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(232 238 245 / 0) var(--tw-gradient-to-position);
+}
+
+:root:not(.dark) [class*="text-white"] {
+  color: #0f172a !important;
+}
+:root:not(.dark) [class*="text-slate-100"] {
+  color: #0f172a !important;
+}
+:root:not(.dark) [class*="text-slate-200"] {
+  color: #1e293b !important;
+}
+:root:not(.dark) [class*="text-slate-300"] {
+  color: #334155 !important;
+}
+:root:not(.dark) [class*="text-slate-400"] {
+  color: #475569 !important;
+}
+:root:not(.dark) [class*="text-slate-500"],
+:root:not(.dark) [class*="text-slate-600"] {
+  color: #64748b !important;
+}
+
+/* Preserve white labels on solid action buttons and alert banners. */
+:root:not(.dark) [class*="bg-blue-600"][class*="text-white"],
+:root:not(.dark) [class*="bg-red-600"][class*="text-white"],
+:root:not(.dark) [class*="bg-emerald-600"][class*="text-white"],
+:root:not(.dark) [class*="bg-amber-600"][class*="text-white"],
+:root:not(.dark) [class*="bg-purple-600"][class*="text-white"] {
+  color: #ffffff !important;
+}
+
+/* The light-on-dark accent shades need darker counterparts on pale surfaces. */
+:root:not(.dark) [class*="text-emerald-300"],
+:root:not(.dark) [class*="text-emerald-400"] { color: #047857 !important; }
+:root:not(.dark) [class*="text-blue-300"],
+:root:not(.dark) [class*="text-blue-400"] { color: #1d4ed8 !important; }
+:root:not(.dark) [class*="text-rose-300"],
+:root:not(.dark) [class*="text-rose-400"] { color: #be123c !important; }
+:root:not(.dark) [class*="text-red-300"],
+:root:not(.dark) [class*="text-red-400"] { color: #b91c1c !important; }
+:root:not(.dark) [class*="text-amber-300"],
+:root:not(.dark) [class*="text-amber-400"] { color: #b45309 !important; }
+:root:not(.dark) [class*="text-purple-300"],
+:root:not(.dark) [class*="text-purple-400"] { color: #7e22ce !important; }
+:root:not(.dark) [class*="text-cyan-300"],
+:root:not(.dark) [class*="text-cyan-400"] { color: #0e7490 !important; }
+
+:root:not(.dark) [class*="border-slate-950"] { border-color: #cbd5e1 !important; }
+:root:not(.dark) [class*="border-slate-800"] { border-color: #e2e8f0 !important; }
+:root:not(.dark) [class*="border-slate-700"] { border-color: #cbd5e1 !important; }
+:root:not(.dark) [class*="border-slate-600"] { border-color: #94a3b8 !important; }
+
 /* Light-mode color overrides — swap slate shades so all existing dark-themed
    Tailwind classes automatically work in light mode without touching JSX. */
 :root:not(.dark) {
-  /* Page / card backgrounds: dark blues become light grays */
-  --color-slate-950: #f8fafc;
-  --color-slate-900: #f1f5f9;
-  --color-slate-800: #e2e8f0;
-  --color-slate-700: #cbd5e1;
+  /* Page / card backgrounds: dark blues become soft blue-gray surfaces */
+  --color-slate-950: #f1f5f9;
+  --color-slate-900: #e8eef5;
+  --color-slate-800: #dfe8f1;
+  --color-slate-700: #d3dee9;
   --color-slate-600: #94a3b8;
   /* Text: light grays become dark grays */
   --color-slate-500: #64748b;
