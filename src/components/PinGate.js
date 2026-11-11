@@ -19,6 +19,7 @@ export function adminHeaders(extra = {}) {
 
 export function clearAdminToken() {
   getStorage()?.removeItem(KEY);
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('access-role-changed'));
 }
 
 export function hasAdminToken() {
@@ -27,6 +28,7 @@ export function hasAdminToken() {
 
 export function saveAdminToken(token) {
   getStorage()?.setItem(KEY, token);
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('access-role-changed'));
 }
 
 export async function adminFetch(url, options = {}) {

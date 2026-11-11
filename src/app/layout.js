@@ -24,7 +24,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="dark h-full" suppressHydrationWarning>
+    <html lang="en" className="dark h-full" data-theme="dark" suppressHydrationWarning>
       <body className="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-red-500 selection:text-white w-full overflow-x-hidden">
         <ThemeProvider>
           {/* Global Critical Alert Bar */}

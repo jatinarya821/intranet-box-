@@ -138,8 +138,9 @@ export default function AdminPage() {
     <div className="max-w-3xl mx-auto space-y-6 min-w-0 w-full">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
+          <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-red-400">🛡️ Staff role · Administrator</div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-100">⚙️ Camp Settings</h1>
-          <p className="text-slate-400 text-sm mt-0.5">PIN-protected controls for this intranet box</p>
+          <p className="text-slate-400 text-sm mt-0.5">Administrator-only controls for identity, security, backups, and reset.</p>
         </div>
         <span className={`text-xs px-2 py-1 rounded-full border ${unlocked ? 'text-emerald-300 border-emerald-500/40' : 'text-slate-400 border-slate-600'}`}>
           {unlocked ? 'Unlocked' : 'Locked'}

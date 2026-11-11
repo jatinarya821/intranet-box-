@@ -7,24 +7,17 @@ export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState('dark');
 
   useEffect(() => {
-    const stored = localStorage.getItem('theme') || 'dark';
-    setTheme(stored);
-    if (stored === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    const stored = window.localStorage.getItem('theme');
+    const next = stored === 'light' || stored === 'dark' ? stored : 'dark';
+    setTheme(next);
+    applyTheme(next);
   }, []);
 
   const toggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
-    localStorage.setItem('theme', next);
-    if (next === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    window.localStorage.setItem('theme', next);
+    applyTheme(next);
   };
 
   return (
@@ -32,6 +25,13 @@ export function ThemeProvider({ children }) {
       {children}
     </ThemeContext.Provider>
   );
+}
+
+function applyTheme(theme) {
+  const root = document.documentElement;
+  root.classList.toggle('dark', theme === 'dark');
+  root.dataset.theme = theme;
+  root.style.colorScheme = theme;
 }
 
 export function useTheme() {

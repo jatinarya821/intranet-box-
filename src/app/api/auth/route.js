@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import getDb from '@/lib/db';
-import { changePin, issueToken, isAdminRequest, setOperatorPin, verifyOperatorPin, verifyPin } from '@/lib/auth';
+import { changePin, getSession, hasRole, issueToken, isAdminRequest, setOperatorPin, verifyOperatorPin, verifyPin } from '@/lib/auth';
 
 export async function GET(request) {
-  return NextResponse.json({ unlocked: isAdminRequest(request) });
+  const session = getSession(request);
+  return NextResponse.json({ unlocked: Boolean(session), role: session?.role || 'public' });
 }
 
 export async function POST(request) {
@@ -33,8 +34,8 @@ export async function POST(request) {
 }
 
 export async function DELETE(request) {
-  if (!isAdminRequest(request)) {
-    return NextResponse.json({ error: 'Admin PIN required' }, { status: 401 });
+  if (!hasRole(request, ['admin', 'operator'])) {
+    return NextResponse.json({ error: 'Active staff session required' }, { status: 401 });
   }
   const token = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '').trim();
   getDb().prepare('DELETE FROM sessions WHERE token = ?').run(token);

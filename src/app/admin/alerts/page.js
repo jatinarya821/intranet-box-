@@ -56,8 +56,9 @@ export default function AdminAlertsPage() {
     <div className="max-w-3xl mx-auto space-y-6 min-w-0 w-full">
       <div className="flex items-start justify-between gap-3">
         <div>
+          <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-amber-400">📢 Staff role · Alert operator</div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-100">🚨 Alert Operations</h1>
-          <p className="text-slate-400 text-sm mt-0.5">Authorized operators can broadcast and remove alerts.</p>
+          <p className="text-slate-400 text-sm mt-0.5">Broadcast and remove emergency alerts. System settings remain administrator-only.</p>
         </div>
         <Link href="/alerts" className="text-sm text-blue-400 hover:text-blue-300">Public view →</Link>
       </div>

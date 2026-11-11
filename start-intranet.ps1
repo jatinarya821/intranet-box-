@@ -124,15 +124,14 @@ Write-Host "[3/4] Starting Intranet Box server..." -ForegroundColor Cyan
 
 Set-Location $scriptDir
 
-# Check if production build exists
+# Always rebuild before serving production so connected devices do not receive
+# a stale client bundle after source changes.
 $nextDir = Join-Path $scriptDir ".next"
-if (-not (Test-Path $nextDir)) {
-    Write-Host "  Building production app (first time only)..." -ForegroundColor Yellow
-    npm run build 2>&1 | Out-Null
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "  [!] Build failed. Starting in dev mode instead." -ForegroundColor Yellow
-        Write-Host ""
-    }
+Write-Host "  Building production app for LAN clients..." -ForegroundColor Yellow
+npm run build
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  [!] Build failed. Server was not started." -ForegroundColor Red
+    exit 1
 }
 
 # ----------------------------

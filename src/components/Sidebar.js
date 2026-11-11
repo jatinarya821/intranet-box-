@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import ThemeToggle from '@/components/ThemeToggle';
+import RoleMenu from '@/components/RoleMenu';
 
 const navItems = [
   { href: '/', label: 'Command Center', icon: '🏠', badge: null },
@@ -13,8 +14,6 @@ const navItems = [
   { href: '/inventory', label: 'Supply Inventory', icon: '📦', badge: null },
   { href: '/bulletin', label: 'Bulletin Board', icon: '💬', badge: null },
   { href: '/connect', label: 'Hotspot / QR', icon: '📱', badge: null },
-  { href: '/admin', label: 'Camp Settings', icon: '⚙️', badge: null },
-  { href: '/admin/alerts', label: 'Alert Operations', icon: '📢', badge: null },
 ];
 
 export default function Sidebar() {
@@ -42,13 +41,13 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Top Header (compact, thumb-friendly) */}
-      <header className="md:hidden flex items-center justify-between bg-slate-950/90 backdrop-blur border-b border-slate-800/80 px-4 py-2.5 sticky top-0 z-30 w-full shrink-0">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-red-600/20 border border-red-500/40 flex items-center justify-center text-sm">
+      <header className="md:hidden flex items-center gap-2 bg-slate-950/90 backdrop-blur border-b border-slate-800/80 px-3 py-2.5 sticky top-0 z-30 w-full min-w-0 shrink-0">
+        <Link href="/" className="flex items-center gap-2 min-w-0 flex-1">
+          <div className="w-7 h-7 shrink-0 rounded-lg bg-red-600/20 border border-red-500/40 flex items-center justify-center text-sm">
             🚨
           </div>
-          <div>
-            <div className="font-bold text-sm tracking-tight text-white leading-tight truncate max-w-[46vw]">
+          <div className="min-w-0">
+            <div className="font-bold text-sm tracking-tight text-white leading-tight truncate">
               {campName}
             </div>
             <div className="text-[10px] text-emerald-400 font-mono flex items-center gap-1 leading-none">
@@ -58,19 +57,10 @@ export default function Sidebar() {
           </div>
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 shrink-0">
           {/* Theme toggle */}
           <ThemeToggle />
-
-          {/* Quick QR link for mobile */}
-          <Link
-            href="/connect"
-            aria-label="Scan QR Code"
-            className="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 text-xs flex items-center gap-1 active:scale-95"
-          >
-            <span>📱</span>
-            <span className="text-[11px] font-medium hidden xs:inline">QR</span>
-          </Link>
+          <RoleMenu />
 
           {/* All modules drawer toggle */}
           <button
@@ -172,6 +162,9 @@ export default function Sidebar() {
               HOTSPOT READY
             </span>
             <span className="text-slate-500 font-mono text-[10px]">v1.2</span>
+          </div>
+          <div className="mt-3">
+            <RoleMenu />
           </div>
         </div>
 
