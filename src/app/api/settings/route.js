@@ -25,22 +25,32 @@ export async function PATCH(request) {
     }
     const body = await request.json();
     const db = getDb();
-    const update = db.prepare('UPDATE settings SET value = ? WHERE key = ?');
+    const update = db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value');
     const allowed = {
       camp_name: String(body.camp_name || '').trim().slice(0, 80),
       hotspot_ip: String(body.hotspot_ip || '').trim().slice(0, 64),
-      hotspot_ssid: String(body.hotspot_ssid || '').trim().slice(0, 32),
+      hotspot_ssid: String(body.hotspot_ssid || '').trim(),
     };
     if (!allowed.camp_name) {
       return NextResponse.json({ error: 'Camp name is required' }, { status: 400 });
+    }
+    if (!allowed.hotspot_ssid || Buffer.byteLength(allowed.hotspot_ssid, 'utf8') > 32) {
+      return NextResponse.json({ error: 'Enter a hotspot name of up to 32 bytes' }, { status: 400 });
+    }
+    if (body.hotspot_password !== undefined && body.hotspot_password !== '') {
+      if (typeof body.hotspot_password !== 'string' || !/^[\x20-\x7e]{8,63}$/.test(body.hotspot_password)) {
+        return NextResponse.json({ error: 'Hotspot password must be 8–63 printable ASCII characters' }, { status: 400 });
+      }
+      allowed.hotspot_password = body.hotspot_password;
     }
     if (allowed.hotspot_ip && (isIP(allowed.hotspot_ip) !== 4 || allowed.hotspot_ip.startsWith('127.') || allowed.hotspot_ip === '0.0.0.0')) {
       return NextResponse.json({ error: 'Enter a valid LAN IPv4 address, or leave it blank for automatic detection' }, { status: 400 });
     }
     const apply = db.transaction(() => {
-      for (const [key, value] of Object.entries(allowed)) update.run(value, key);
+      for (const [key, value] of Object.entries(allowed)) update.run(key, value);
     });
     apply();
+    delete allowed.hotspot_password;
     return NextResponse.json(allowed);
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

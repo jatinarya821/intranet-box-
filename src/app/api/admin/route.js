@@ -21,7 +21,7 @@ export async function POST(request) {
         map_pins: db.prepare('SELECT * FROM map_pins').all(),
         resource_log: db.prepare('SELECT * FROM resource_log ORDER BY id DESC LIMIT 200').all(),
         settings: db.prepare(
-          "SELECT key, value FROM settings WHERE key NOT IN ('pin_hash', 'pin_salt')"
+          "SELECT key, value FROM settings WHERE key NOT IN ('pin_hash', 'pin_salt', 'operator_pin_hash', 'operator_pin_salt', 'hotspot_password')"
         ).all(),
       };
       return NextResponse.json(dump);

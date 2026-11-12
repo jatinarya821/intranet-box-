@@ -10,25 +10,18 @@ function normaliseHost(value) {
     .replace(/:\d+$/, '');
 }
 
-function escapeWifiValue(value) {
-  return value.replace(/([\\\\;,:])/g, '\\$1');
-}
-
 export default function ConnectPage() {
   const [networkInfo, setNetworkInfo] = useState({ addresses: [], port: 3000 });
   const [qrDataUrl, setQrDataUrl] = useState(null);
   const [customIp, setCustomIp] = useState('');
-  const [networkName, setNetworkName] = useState('EMERGENCY-NET');
-  const [networkPassword, setNetworkPassword] = useState('');
+  const [networkName, setNetworkName] = useState('');
   const [wifiQrDataUrl, setWifiQrDataUrl] = useState(null);
+  const [wifiStatus, setWifiStatus] = useState('Loading hotspot details…');
   const [qrError, setQrError] = useState('');
   const [addressWarning, setAddressWarning] = useState('');
 
   const host = normaliseHost(customIp);
   const connectUrl = host ? `http://${host}:${networkInfo.port}` : '';
-  const wifiPayload = networkName && networkPassword
-    ? `WIFI:T:WPA;S:${escapeWifiValue(networkName)};P:${escapeWifiValue(networkPassword)};;`
-    : '';
 
   useEffect(() => {
     const controller = new AbortController();
@@ -43,6 +36,7 @@ export default function ConnectPage() {
         const browserHost = window.location.hostname;
         const configuredIp = (settings.hotspot_ip || '').trim();
         setNetworkInfo({ addresses, port });
+        setNetworkName(settings.hotspot_ssid || '');
         setCustomIp(configuredIp || (addresses.includes(browserHost) ? browserHost : addresses[0] || ''));
         if (configuredIp && !addresses.includes(configuredIp)) {
           setAddressWarning('The saved portal IP was not found on this device. Check the hotspot address in Camp Settings before sharing this QR code.');
@@ -50,7 +44,7 @@ export default function ConnectPage() {
       })
       .catch((error) => {
         if (error.name !== 'AbortError') {
-          setQrError('Could not load the saved portal address. Enter this device\'s LAN IP address below.');
+          setQrError('Could not load the portal address. Ask an administrator to check the network settings.');
         }
       });
 
@@ -76,7 +70,7 @@ export default function ConnectPage() {
         console.error('QR generation failed', error);
         if (!cancelled) {
           setQrDataUrl(null);
-          setQrError('Could not create the QR code. Enter the LAN IP and try again.');
+          setQrError('Could not create the QR code. Ask an administrator to check the network settings.');
         }
       });
 
@@ -86,26 +80,27 @@ export default function ConnectPage() {
   }, [connectUrl]);
 
   useEffect(() => {
-    let cancelled = false;
-
-    const qrPromise = wifiPayload
-      ? QRCode.toDataURL(wifiPayload, {
-        width: 300,
-        margin: 2,
-        color: { dark: '#0f172a', light: '#f1f5f9' },
+    const controller = new AbortController();
+    const refreshWifi = () => fetch('/api/wifi-qr', { signal: controller.signal, cache: 'no-store' })
+      .then((response) => {
+        if (!response.ok) throw new Error('Unable to load QR code');
+        return response.json();
       })
-      : Promise.resolve(null);
-
-    qrPromise.then((dataUrl) => {
-      if (!cancelled) setWifiQrDataUrl(dataUrl);
-    }).catch(() => {
-      if (!cancelled) setWifiQrDataUrl(null);
-    });
-
+      .then((data) => {
+        setWifiQrDataUrl(data.image || null);
+        if (data.ssid) setNetworkName(data.ssid);
+        setWifiStatus(data.configured ? '' : 'An administrator needs to set up the hotspot QR code.');
+      })
+      .catch((error) => {
+        if (error.name !== 'AbortError') setWifiStatus('Could not load the hotspot QR code.');
+      });
+    refreshWifi();
+    const interval = setInterval(refreshWifi, 10000);
     return () => {
-      cancelled = true;
+      clearInterval(interval);
+      controller.abort();
     };
-  }, [wifiPayload]);
+  }, []);
 
   const steps = [
     { step: '1', icon: '📡', title: 'Create a Mobile Hotspot', desc: 'On this device (Raspberry Pi/laptop), enable Wi-Fi hotspot. Name it something recognizable, such as EMERGENCY-NET.' },
@@ -130,33 +125,14 @@ export default function ConnectPage() {
               <img src={wifiQrDataUrl} alt="Wi-Fi connection QR code" className="w-28 h-28 sm:w-36 sm:h-36 rounded" />
             ) : (
               <div className="w-28 h-28 sm:w-36 sm:h-36 flex items-center justify-center text-slate-400 text-xs text-center px-3">
-                Enter the hotspot name and password
+                {wifiStatus}
               </div>
             )}
           </div>
           <div className="w-full">
             <h2 className="font-semibold text-slate-100">1. Join the emergency hotspot</h2>
-            <p className="text-xs text-slate-400 mt-1 mb-4">This QR code joins the Wi-Fi network. Configure it to exactly match the hotspot running on this device.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <label className="text-xs text-slate-400">
-                Hotspot name (SSID)
-                <input
-                  className="mt-1.5 w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm focus:outline-none focus:border-blue-500"
-                  value={networkName}
-                  onChange={e => setNetworkName(e.target.value)}
-                />
-              </label>
-              <label className="text-xs text-slate-400">
-                Hotspot password
-                <input
-                  type="password"
-                  className="mt-1.5 w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm focus:outline-none focus:border-blue-500"
-                  placeholder="At least 8 characters"
-                  value={networkPassword}
-                  onChange={e => setNetworkPassword(e.target.value)}
-                />
-              </label>
-            </div>
+            <p className="text-xs text-slate-400 mt-1 mb-4">Scan this code to join the Wi-Fi network configured by the administrator.</p>
+            {networkName && <p className="text-sm text-slate-200">Hotspot: <strong>{networkName}</strong></p>}
             <p className="text-xs text-amber-300 mt-3">Share this code only with people who should be able to join the local emergency network.</p>
           </div>
         </div>
@@ -185,27 +161,7 @@ export default function ConnectPage() {
           )}
           {qrError && <p className="mt-3 text-xs text-amber-300 text-center">{qrError}</p>}
           {addressWarning && <p className="mt-3 text-xs text-amber-300 text-center" role="status">{addressWarning}</p>}
-          <div className="mt-4 w-full">
-            <label className="text-xs text-slate-400 block mb-1.5">
-              This device&apos;s LAN IP address:
-            </label>
-            <div className="flex gap-2">
-              <input
-                className="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm focus:outline-none focus:border-blue-500 font-mono"
-                placeholder="192.168.43.1"
-                value={customIp}
-                onChange={e => {
-                  setCustomIp(e.target.value);
-                  setAddressWarning('');
-                }}
-              />
-            </div>
-            {networkInfo.addresses.length > 1 && (
-              <p className="mt-2 text-xs text-slate-500">
-                Other detected addresses: {networkInfo.addresses.filter(address => address !== host).join(', ')}
-              </p>
-            )}
-          </div>
+          <p className="mt-4 text-xs text-slate-400">The administrator can change the portal address in Camp Settings.</p>
         </div>
 
         {/* Network info panel */}
@@ -265,7 +221,7 @@ export default function ConnectPage() {
         <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">📋 Quick Hotspot Setup (Windows)</div>
         <div className="space-y-2 text-xs text-slate-300 bg-slate-900 rounded-lg p-3">
           <div><span className="text-slate-500">1.</span> Open <strong>Settings → Network &amp; internet → Mobile hotspot</strong> and turn it on.</div>
-          <div><span className="text-slate-500">2.</span> Edit the network name and password, then enter the same values in the Wi-Fi QR card above.</div>
+          <div><span className="text-slate-500">2.</span> An administrator enters the same hotspot name and password in Camp Settings.</div>
           <div><span className="text-slate-500">3.</span> Start the portal with <code className="text-cyan-300">npm run build &amp;&amp; npm start</code>.</div>
           <div><span className="text-slate-500">4.</span> If Windows asks, allow Node.js to communicate on <strong>Private networks</strong>.</div>
         </div>

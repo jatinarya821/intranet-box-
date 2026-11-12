@@ -10,6 +10,7 @@ export default function AdminPage() {
 
 function AdminControls() {
   const [settings, setSettings] = useState({ camp_name: '', hotspot_ip: '', hotspot_ssid: '' });
+  const [hotspotPassword, setHotspotPassword] = useState('');
   const [pinForm, setPinForm] = useState({ currentPin: '', newPin: '', confirm: '' });
   const [operatorPin, setOperatorPin] = useState('');
   const [message, setMessage] = useState('');
@@ -29,7 +30,10 @@ function AdminControls() {
     setUnlocked(hasAdminToken());
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    const timer = setTimeout(load, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   const guard = (action) => {
     if (!hasAdminToken()) {
@@ -45,7 +49,7 @@ function AdminControls() {
     guard(async () => {
       setError('');
       setMessage('');
-      const res = await adminFetch('/api/settings', { method: 'PATCH', body: JSON.stringify(settings) });
+      const res = await adminFetch('/api/settings', { method: 'PATCH', body: JSON.stringify({ ...settings, hotspot_password: hotspotPassword }) });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || 'Could not save settings');
@@ -53,6 +57,7 @@ function AdminControls() {
         return;
       }
       setMessage('Camp settings saved.');
+      setHotspotPassword('');
       setUnlocked(true);
     });
   };
@@ -175,6 +180,15 @@ function AdminControls() {
           />
         </label>
         <p className="text-xs text-slate-400">Enter the host device&apos;s hotspot IPv4 address, such as 192.168.137.1. Leave blank to detect an address automatically. This setting does not change the device&apos;s network configuration.</p>
+        <label className="block text-xs text-slate-400">
+          Hotspot name (SSID)
+          <input className="mt-1 w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100" value={settings.hotspot_ssid} onChange={(event) => setSettings((current) => ({ ...current, hotspot_ssid: event.target.value }))} required />
+        </label>
+        <label className="block text-xs text-slate-400">
+          Hotspot password for the Wi-Fi QR code
+          <input type="password" autoComplete="new-password" className="mt-1 w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100" value={hotspotPassword} onChange={(event) => setHotspotPassword(event.target.value)} placeholder="Enter to set or change; leave blank to keep" />
+        </label>
+        <p className="text-xs text-amber-300">Use the same name and password as the actual hotspot. Anyone who can scan the QR code can recover the password. The password is saved on this device.</p>
         <button type="submit" className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium">
           Save settings
         </button>

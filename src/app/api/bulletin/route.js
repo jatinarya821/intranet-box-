@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const db = getDb();
     const posts = db.prepare('SELECT * FROM bulletin_posts ORDER BY created_at DESC LIMIT 50').all();
-    return NextResponse.json(posts);
+    return NextResponse.json(posts, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -6,34 +6,54 @@ export default function BulletinPage() {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ author: '', message: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   const fetchPosts = async () => {
     try {
-      const res = await fetch('/api/bulletin');
+      const res = await fetch('/api/bulletin', { cache: 'no-store' });
+      if (!res.ok) throw new Error('Could not load notices');
       const data = await res.json();
+      if (!Array.isArray(data)) throw new Error('Could not load notices');
       setPosts(data);
-    } catch {}
+      setError('');
+    } catch {
+      setError('Could not refresh notices. Check your connection; we will keep trying.');
+    }
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchPosts();
-    const interval = setInterval(fetchPosts, 15000);
-    return () => clearInterval(interval);
+    const initialFetch = setTimeout(fetchPosts, 0);
+    const interval = setInterval(fetchPosts, 5000);
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') fetchPosts();
+    };
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    return () => {
+      clearTimeout(initialFetch);
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await fetch('/api/bulletin', {
+      const res = await fetch('/api/bulletin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Could not post notice');
+      }
       setForm({ author: '', message: '' });
       await fetchPosts();
-    } catch {}
+    } catch (err) {
+      setError(err.message || 'Could not post notice. Please try again.');
+    }
     setSubmitting(false);
   };
 
@@ -51,8 +71,10 @@ export default function BulletinPage() {
     <div className="max-w-3xl mx-auto min-w-0 w-full">
       <div className="mb-6">
         <h1 className="text-xl sm:text-2xl font-bold text-slate-100">💬 Community Bulletin Board</h1>
-        <p className="text-slate-400 text-sm mt-0.5">Post notices · Visible to everyone on the network · Auto-refreshes every 15s</p>
+        <p className="text-slate-400 text-sm mt-0.5">Post notices · Visible to everyone on the network · Checks for updates every 5 seconds</p>
       </div>
+
+      {error && <p role="status" className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-300">{error}</p>}
 
       {/* Post form */}
       <form onSubmit={handleSubmit} className="mb-6 bg-slate-800/60 border border-slate-700 rounded-xl p-4 sm:p-5 space-y-3">

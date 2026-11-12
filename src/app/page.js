@@ -115,8 +115,8 @@ export default function Dashboard() {
       href: '/knowledge',
       icon: '📚',
       title: 'Offline Knowledge Base',
-      desc: '11 verified protocols for first aid, flood crop recovery, water purification, and camp setups.',
-      stat: '11 Guides Preloaded',
+      desc: 'Offline guides for first aid, disasters, water, and camp setups.',
+      stat: 'Browse offline guides',
       border: 'border-cyan-500/30 hover:border-cyan-400/60 bg-gradient-to-b from-cyan-950/20 to-slate-900/60',
     },
     {
