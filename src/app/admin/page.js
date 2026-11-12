@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import PinGate, { adminFetch, clearAdminToken, hasAdminToken, saveAdminToken } from '@/components/PinGate';
 import StaffPageGate from '@/components/StaffPageGate';
+import StaffBulletin from '@/components/StaffBulletin';
 
 export default function AdminPage() {
   return <StaffPageGate title="Administrator access" allowedRoles={['admin']}><AdminControls /></StaffPageGate>;
@@ -159,6 +160,8 @@ function AdminControls() {
 
       {message && <p className="text-sm text-emerald-300">{message}</p>}
       {error && <p className="text-sm text-red-400">{error}</p>}
+
+      <StaffBulletin />
 
       <form onSubmit={saveSettings} className="bg-slate-800/60 border border-slate-700 rounded-xl p-5 space-y-4">
         <h2 className="font-semibold text-slate-100">Camp identity</h2>

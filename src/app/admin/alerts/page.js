@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import PinGate, { adminFetch, hasAdminToken } from '@/components/PinGate';
 import StaffPageGate from '@/components/StaffPageGate';
+import StaffBulletin from '@/components/StaffBulletin';
 
 const severities = ['info', 'warning', 'critical', 'safe'];
 
@@ -25,8 +26,11 @@ function AlertControls() {
   };
 
   useEffect(() => {
-    setGateOpen(!hasAdminToken());
-    load().catch(() => setError('Could not load alerts.'));
+    const timer = setTimeout(() => {
+      setGateOpen(!hasAdminToken());
+      load().catch(() => setError('Could not load alerts.'));
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const submit = async (event) => {
@@ -67,6 +71,8 @@ function AlertControls() {
         </div>
         <Link href="/alerts" className="text-sm text-blue-400 hover:text-blue-300">Public view →</Link>
       </div>
+
+      <StaffBulletin />
 
       <form onSubmit={submit} className="bg-slate-800/60 border border-slate-700 rounded-xl p-5 space-y-4">
         <h2 className="font-semibold text-slate-100">Broadcast an alert</h2>

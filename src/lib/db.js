@@ -66,6 +66,8 @@ function initializeSchema() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       author TEXT NOT NULL DEFAULT 'Anonymous',
       message TEXT NOT NULL,
+      author_role TEXT NOT NULL DEFAULT 'public',
+      reply_to_id INTEGER,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -105,6 +107,14 @@ function initializeSchema() {
   const sessionColumns = db.prepare('PRAGMA table_info(sessions)').all();
   if (!sessionColumns.some((column) => column.name === 'role')) {
     db.exec("ALTER TABLE sessions ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'");
+  }
+
+  const bulletinColumns = db.prepare('PRAGMA table_info(bulletin_posts)').all();
+  if (!bulletinColumns.some((column) => column.name === 'author_role')) {
+    db.exec("ALTER TABLE bulletin_posts ADD COLUMN author_role TEXT NOT NULL DEFAULT 'public'");
+  }
+  if (!bulletinColumns.some((column) => column.name === 'reply_to_id')) {
+    db.exec('ALTER TABLE bulletin_posts ADD COLUMN reply_to_id INTEGER');
   }
 
   seedIfEmpty();

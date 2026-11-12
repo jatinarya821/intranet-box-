@@ -72,6 +72,7 @@ export default function BulletinPage() {
       <div className="mb-6">
         <h1 className="text-xl sm:text-2xl font-bold text-slate-100">💬 Community Bulletin Board</h1>
         <p className="text-slate-400 text-sm mt-0.5">Post notices · Visible to everyone on the network · Checks for updates every 5 seconds</p>
+        <p className="text-slate-400 text-xs mt-2">Only posts marked “Verified administrator” or “Verified operator” were sent through a staff session. Names on other posts are not verified.</p>
       </div>
 
       {error && <p role="status" className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-300">{error}</p>}
@@ -131,18 +132,30 @@ export default function BulletinPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="font-medium text-slate-200 text-sm">{author}</span>
+                    <div className="flex items-center gap-2 flex-wrap min-w-0">
+                      <span className="font-medium text-slate-200 text-sm break-all">{author}</span>
+                      {['admin', 'operator'].includes(post.author_role) ? (
+                        <span className="rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-300">✓ Verified {post.author_role === 'admin' ? 'administrator' : 'operator'}</span>
+                      ) : (
+                        <span className="rounded-full border border-slate-600 px-2 py-0.5 text-xs text-slate-400">Unverified</span>
+                      )}
+                    </div>
                     <span className="text-xs text-slate-500">{new Date(post.created_at).toLocaleString()}</span>
                   </div>
-                  <p className="text-slate-300 text-sm mt-1 leading-relaxed break-words">{post.message}</p>
+                  {post.reply_to_id && (
+                    <div className="mt-2 rounded border-l-2 border-blue-500 bg-slate-900/60 p-2 text-xs text-slate-400 break-words">
+                      {post.reply_to_message ? <>Reply to {post.reply_to_author}: {post.reply_to_message}</> : 'Reply to a message that is no longer available'}
+                    </div>
+                  )}
+                  <p className="text-slate-300 text-sm mt-1 leading-relaxed break-words whitespace-pre-wrap">{post.message}</p>
                 </div>
-                <button
+                {!['admin', 'operator'].includes(post.author_role) && <button
                   onClick={() => handleDelete(post.id)}
                   className="shrink-0 text-slate-600 hover:text-red-400 transition-colors self-start mt-0.5"
                   title="Delete post"
                 >
                   🗑️
-                </button>
+                </button>}
               </div>
             );
           })}
