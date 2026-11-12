@@ -38,6 +38,10 @@ function initializeSchema() {
       category TEXT NOT NULL,
       title TEXT NOT NULL,
       content TEXT NOT NULL,
+      source_title TEXT NOT NULL DEFAULT '',
+      source_url TEXT NOT NULL DEFAULT '',
+      reviewed_by TEXT NOT NULL DEFAULT '',
+      review_date TEXT NOT NULL DEFAULT '',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -115,6 +119,13 @@ function initializeSchema() {
   }
   if (!bulletinColumns.some((column) => column.name === 'reply_to_id')) {
     db.exec('ALTER TABLE bulletin_posts ADD COLUMN reply_to_id INTEGER');
+  }
+
+  const articleColumns = db.prepare('PRAGMA table_info(articles)').all();
+  for (const name of ['source_title', 'source_url', 'reviewed_by', 'review_date']) {
+    if (!articleColumns.some((column) => column.name === name)) {
+      db.exec("ALTER TABLE articles ADD COLUMN " + name + " TEXT NOT NULL DEFAULT ''");
+    }
   }
 
   seedIfEmpty();

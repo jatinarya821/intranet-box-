@@ -1,6 +1,37 @@
 // The text is available offline; the source link is for checking the original when online.
 export const featuredGuides = [
   {
+    id: 'featured-snakebite',
+    category: 'First Aid',
+    title: 'Snakebite: Keep Still and Get Medical Help',
+    content: 'Snakebite first aid: move to safety, keep the person still, avoid unsafe methods, and reach a health facility.',
+    source: {
+      title: 'World Health Organization, Snakebite envenoming',
+      url: 'https://www.who.int/health-topics/snakebite/snakebite',
+      extraUrl: 'https://www.who.int/europe/news-room/questions-and-answers/item/public-health-advice-in-the-aftermath-of-flooding---how-to-protect-your-health-and-keep-safe',
+      checked: '12 November 2026',
+      note: 'Summarized from WHO guidance; this guide has not been independently reviewed by a clinician.',
+    },
+    sections: [
+      {
+        title: 'Move away and get urgent help',
+        text: 'Move away from the snake and keep yourself and the person safe. Arrange urgent transport to a health facility. Do not try to catch or handle the snake.',
+      },
+      {
+        title: 'Keep the person and limb still',
+        text: 'Reassure the person and keep them as still as possible. Remove rings or other tight items near the bite before swelling develops. Use a splint to keep the bitten limb still and carry the person if possible.',
+      },
+      {
+        title: 'Avoid unsafe treatments',
+        text: 'Do not cut or suck the wound, apply a tight tourniquet, or use traditional remedies. Do not wash or rub the bite. Follow advice from local medical professionals.',
+      },
+      {
+        title: 'Watch breathing during transport',
+        text: 'Stay with the person and monitor their airway and breathing. If they are not breathing normally, get emergency help and begin CPR according to your training or the dispatcher’s instructions.',
+      },
+    ],
+  },
+  {
     id: 'featured-recovery-position',
     category: 'First Aid',
     title: 'Unresponsive but Breathing: Recovery Position',

@@ -4,6 +4,28 @@ import PinGate, { adminFetch, hasAdminToken } from '@/components/PinGate';
 import { featuredGuides } from '@/lib/featured-guides';
 
 const CATEGORIES = ['All', 'First Aid', 'Agriculture', 'Health', 'Disaster SOPs', 'Sanitation', 'Child Safety', 'Legal Rights'];
+const EMPTY_FORM = { category: 'First Aid', title: '', content: '', source_title: '', source_url: '', reviewed_by: '', review_date: '', review_confirmed: false };
+
+function guideStatus(article) {
+  if (article.reviewed_by && article.review_date && article.source_title) return 'Review recorded';
+  if (article.source || article.source_title) return 'Source listed';
+  return 'Needs review';
+}
+
+function GuideStatus({ article }) {
+  const status = guideStatus(article);
+  const color = status === 'Needs review' ? 'border-amber-500/40 text-amber-300' : 'border-emerald-500/40 text-emerald-300';
+  return <span className={'inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ' + color}>{status}</span>;
+}
+
+function safeSourceUrl(value) {
+  try {
+    const url = new URL(value);
+    return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password ? url.href : '';
+  } catch {
+    return '';
+  }
+}
 
 const CAT_ICONS = {
   'First Aid': '🩺',
@@ -33,13 +55,15 @@ export default function KnowledgePage() {
   const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ category: 'First Aid', title: '', content: '' });
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [editingId, setEditingId] = useState(null);
+  const [formError, setFormError] = useState('');
   const [gateOpen, setGateOpen] = useState(false);
   const [pending, setPending] = useState(null);
 
   const loadArticles = () => {
-    fetch('/api/articles')
-      .then(r => r.json())
+    fetch('/api/articles', { cache: 'no-store' })
+      .then(r => { if (!r.ok) throw new Error('Could not load guides'); return r.json(); })
       .then(data => { setArticles(data); setLoading(false); })
       .catch(() => setLoading(false));
   };
@@ -49,11 +73,19 @@ export default function KnowledgePage() {
   const handleCreate = (event) => {
     event.preventDefault();
     const publish = async () => {
-      const res = await adminFetch('/api/articles', { method: 'POST', body: JSON.stringify(form) });
-      if (!res.ok) return;
-      setForm({ category: 'First Aid', title: '', content: '' });
-      setShowForm(false);
-      loadArticles();
+      setFormError('');
+      try {
+        const res = await adminFetch('/api/articles', { method: editingId ? 'PATCH' : 'POST', body: JSON.stringify(editingId ? { ...form, id: editingId } : form) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Could not save guide');
+        setForm(EMPTY_FORM);
+        setEditingId(null);
+        setShowForm(false);
+        if (selected?.id === data.id) setSelected(data);
+        loadArticles();
+      } catch (error) {
+        setFormError(error.message || 'Could not save guide');
+      }
     };
     if (!hasAdminToken()) {
       setPending(() => publish);
@@ -61,6 +93,14 @@ export default function KnowledgePage() {
       return;
     }
     publish();
+  };
+
+  const editGuide = (article) => {
+    setEditingId(article.id);
+    setForm({ category: article.category, title: article.title, content: article.content, source_title: article.source_title || '', source_url: article.source_url || '', reviewed_by: article.reviewed_by || '', review_date: article.review_date || '', review_confirmed: false });
+    setFormError('');
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const filtered = [...featuredGuides, ...articles].filter(a => {
@@ -84,7 +124,7 @@ export default function KnowledgePage() {
           <p className="text-slate-400 text-sm mt-0.5">Preloaded offline guides · First aid, agriculture, health, disaster SOPs</p>
         </div>
         <button
-          onClick={() => setShowForm((open) => !open)}
+          onClick={() => { setShowForm((open) => !open); setEditingId(null); setForm(EMPTY_FORM); setFormError(''); }}
           className="shrink-0 px-3 py-2 rounded-lg bg-blue-600 text-white text-sm"
         >
           {showForm ? 'Close' : '+ Guide'}
@@ -106,10 +146,13 @@ export default function KnowledgePage() {
 
       {showForm && (
         <form onSubmit={handleCreate} className="mb-5 bg-slate-800/60 border border-slate-700 rounded-xl p-4 space-y-3">
+          <h2 className="font-semibold text-slate-100">{editingId ? 'Edit guide and review details' : 'Add a guide'}</h2>
+          <p className="text-xs text-slate-400">Saving requires administrator access. Only record a review when the named person has reviewed this version.</p>
+          {formError && <p role="alert" className="text-sm text-red-400">{formError}</p>}
           <select
             className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm"
             value={form.category}
-            onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}
+            onChange={(event) => setForm((current) => ({ ...current, category: event.target.value, review_confirmed: false }))}
           >
             {CATEGORIES.filter((cat) => cat !== 'All').map((cat) => <option key={cat}>{cat}</option>)}
           </select>
@@ -118,7 +161,7 @@ export default function KnowledgePage() {
             placeholder="Guide title"
             className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm"
             value={form.title}
-            onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
+            onChange={(event) => setForm((current) => ({ ...current, title: event.target.value, review_confirmed: false }))}
           />
           <textarea
             required
@@ -126,8 +169,23 @@ export default function KnowledgePage() {
             placeholder="Steps and warnings. Use **bold** for headings."
             className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm"
             value={form.content}
-            onChange={(event) => setForm((current) => ({ ...current, content: event.target.value }))}
+            onChange={(event) => setForm((current) => ({ ...current, content: event.target.value, review_confirmed: false }))}
           />
+          <label className="block text-xs text-slate-400">Source name (optional)
+            <input maxLength={300} value={form.source_title} onChange={(event) => setForm((current) => ({ ...current, source_title: event.target.value, review_confirmed: false }))} placeholder="Organization and publication" className="mt-1 w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100" />
+          </label>
+          <label className="block text-xs text-slate-400">Source link (optional; opens when online)
+            <input type="url" maxLength={2048} value={form.source_url} onChange={(event) => setForm((current) => ({ ...current, source_url: event.target.value, review_confirmed: false }))} placeholder="https://..." className="mt-1 w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100" />
+          </label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block text-xs text-slate-400">Reviewed by (optional)
+              <input maxLength={160} value={form.reviewed_by} onChange={(event) => setForm((current) => ({ ...current, reviewed_by: event.target.value, review_confirmed: false }))} placeholder="Reviewer name and role" className="mt-1 w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100" />
+            </label>
+            <label className="block text-xs text-slate-400">Review date (optional)
+              <input type="date" value={form.review_date} onChange={(event) => setForm((current) => ({ ...current, review_date: event.target.value, review_confirmed: false }))} className="mt-1 w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100" />
+            </label>
+          </div>
+          {(form.reviewed_by || form.review_date) && <label className="flex items-start gap-2 text-xs text-slate-300"><input type="checkbox" checked={form.review_confirmed} onChange={(event) => setForm((current) => ({ ...current, review_confirmed: event.target.checked }))} /> I confirm the named person reviewed this version of the guide.</label>}
           <button type="submit" className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm">Save guide</button>
         </form>
       )}
@@ -174,6 +232,10 @@ export default function KnowledgePage() {
               </span>
             </div>
             <h2 className="text-xl font-bold text-slate-100 mb-4">{selected.title}</h2>
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <GuideStatus article={selected} />
+              {typeof selected.id === 'number' && <button type="button" onClick={() => editGuide(selected)} className="text-xs text-blue-400 underline hover:text-blue-300">Edit guide (admin)</button>}
+            </div>
             {selected.sections ? (
               <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -198,19 +260,37 @@ export default function KnowledgePage() {
                   ))}
                 </div>
                 <div className="mt-5 border-t border-slate-700 pt-4 text-xs leading-relaxed text-slate-400">
-                  <p>Source: {selected.source.title}. Checked {selected.source.checked}.</p>
+                  <p>Source: {selected.source.title}. Source checked {selected.source.checked}.</p>
                   {selected.source.note && <p className="mt-1">{selected.source.note}</p>}
                   <a className="mt-1 inline-block text-blue-400 underline" href={selected.source.url} target="_blank" rel="noreferrer">View original source when online ↗</a>
+                  {selected.source.extraUrl && <a className="mt-1 ml-3 inline-block text-blue-400 underline" href={selected.source.extraUrl} target="_blank" rel="noreferrer">Additional WHO guidance ↗</a>}
                 </div>
               </>
             ) : (
               <>
-                <p className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">This existing guide has no recorded source or review date. Ask a qualified local responder to verify it before relying on it.</p>
+                {selected.content.includes('Clean wound gently with soap and water') && (
+                  <p className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300" role="note">Correction: WHO advises not to wash or rub a snakebite. <button type="button" className="underline" onClick={() => setSelected(featuredGuides.find((guide) => guide.id === 'featured-snakebite'))}>Open the source-listed snakebite guide</button>.</p>
+                )}
+                {selected.content.includes("Mark the time the tourniquet was applied on the patient's forehead") && (
+                  <p className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-300">A source-listed guide is available for severe bleeding. <button type="button" className="underline" onClick={() => setSelected(featuredGuides.find((guide) => guide.id === 'featured-major-bleeding'))}>Open the bleeding guide</button>.</p>
+                )}
                 {selected.content.includes('High body temp (>40°C), no sweating, confusion, unconsciousness') && (
                   <p className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300" role="note">Correction: heat stroke can occur with heavy sweating as well as dry skin. Confusion or unconsciousness in a person exposed to heat requires urgent medical help and immediate cooling.</p>
                 )}
-                <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap article-content">
-                  {renderContent(selected.content)}
+                {selected.content.includes('Clean wound gently with soap and water') || selected.content.includes("Mark the time the tourniquet was applied on the patient's forehead") ? (
+                  <details className="rounded-lg border border-slate-700 p-3">
+                    <summary className="cursor-pointer text-sm font-medium text-slate-300">Show older unreviewed guide</summary>
+                    <div className="mt-3 text-slate-300 text-sm leading-relaxed whitespace-pre-wrap article-content">{renderContent(selected.content)}</div>
+                  </details>
+                ) : (
+                  <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap article-content">
+                    {renderContent(selected.content)}
+                  </div>
+                )}
+                <div className="mt-5 border-t border-slate-700 pt-4 text-xs leading-relaxed text-slate-400">
+                  {selected.source_title ? <p>Source: {selected.source_title}</p> : <p>Source not recorded.</p>}
+                  {safeSourceUrl(selected.source_url) && <a className="mt-1 inline-block text-blue-400 underline" href={safeSourceUrl(selected.source_url)} target="_blank" rel="noreferrer">View source when online ↗</a>}
+                  {selected.reviewed_by && selected.review_date && <p className="mt-1">Review recorded by administrator: {selected.reviewed_by} · {selected.review_date}</p>}
                 </div>
               </>
             )}
@@ -237,14 +317,8 @@ export default function KnowledgePage() {
                       className="text-left bg-slate-800/60 border border-slate-700/60 hover:border-blue-500/50 hover:bg-slate-800 rounded-xl p-4 transition-all"
                     >
                       <div className="font-medium text-slate-100 mb-1">{article.title}</div>
-                      {article.source ? (
-                        <>
-                          <div className="mb-2 text-xs font-medium text-emerald-400">Source listed · Offline guide</div>
-                          <div className="text-slate-500 text-xs leading-relaxed line-clamp-2">{article.content}</div>
-                        </>
-                      ) : (
-                        <div className="text-xs text-amber-400">Source not recorded · Review needed</div>
-                      )}
+                      <div className="mb-2"><GuideStatus article={article} /></div>
+                      <div className="text-slate-500 text-xs leading-relaxed line-clamp-2">{article.content}</div>
                     </button>
                   ))}
                 </div>
