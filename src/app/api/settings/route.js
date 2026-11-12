@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { isIP } from 'node:net';
 import getDb from '@/lib/db';
 import { isAdminRequest } from '@/lib/auth';
 
@@ -32,6 +33,9 @@ export async function PATCH(request) {
     };
     if (!allowed.camp_name) {
       return NextResponse.json({ error: 'Camp name is required' }, { status: 400 });
+    }
+    if (allowed.hotspot_ip && (isIP(allowed.hotspot_ip) !== 4 || allowed.hotspot_ip.startsWith('127.') || allowed.hotspot_ip === '0.0.0.0')) {
+      return NextResponse.json({ error: 'Enter a valid LAN IPv4 address, or leave it blank for automatic detection' }, { status: 400 });
     }
     const apply = db.transaction(() => {
       for (const [key, value] of Object.entries(allowed)) update.run(value, key);

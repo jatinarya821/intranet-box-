@@ -2,8 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import PinGate, { adminFetch, clearAdminToken, hasAdminToken, saveAdminToken } from '@/components/PinGate';
+import StaffPageGate from '@/components/StaffPageGate';
 
 export default function AdminPage() {
+  return <StaffPageGate title="Administrator access" allowedRoles={['admin']}><AdminControls /></StaffPageGate>;
+}
+
+function AdminControls() {
   const [settings, setSettings] = useState({ camp_name: '', hotspot_ip: '', hotspot_ssid: '' });
   const [pinForm, setPinForm] = useState({ currentPin: '', newPin: '', confirm: '' });
   const [operatorPin, setOperatorPin] = useState('');
@@ -162,21 +167,14 @@ export default function AdminPage() {
           />
         </label>
         <label className="block text-xs text-slate-400">
-          Hotspot SSID
-          <input
-            className="mt-1 w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100"
-            value={settings.hotspot_ssid}
-            onChange={(event) => setSettings((current) => ({ ...current, hotspot_ssid: event.target.value }))}
-          />
-        </label>
-        <label className="block text-xs text-slate-400">
-          Hotspot IP shown to visitors
+          Portal IP address for the QR code
           <input
             className="mt-1 w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-100"
             value={settings.hotspot_ip}
             onChange={(event) => setSettings((current) => ({ ...current, hotspot_ip: event.target.value }))}
           />
         </label>
+        <p className="text-xs text-slate-400">Enter the host device&apos;s hotspot IPv4 address, such as 192.168.137.1. Leave blank to detect an address automatically. This setting does not change the device&apos;s network configuration.</p>
         <button type="submit" className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium">
           Save settings
         </button>

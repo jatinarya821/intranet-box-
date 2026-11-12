@@ -2,6 +2,7 @@ import { networkInterfaces } from 'node:os';
 import { connection, NextResponse } from 'next/server';
 
 function addressPriority(address) {
+  if (address === '192.168.137.1') return -1;
   if (address.startsWith('192.168.')) return 0;
   if (address.startsWith('10.')) return 1;
 

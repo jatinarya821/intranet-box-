@@ -62,15 +62,18 @@ export default function RoleMenu() {
             <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Current access</p>
             <p className={`mt-1 text-sm font-semibold ${current.color}`}>{current.icon} {current.label}</p>
           </div>
+          <Link href="/access" onClick={() => setOpen(false)} className="mt-1 block rounded-lg bg-blue-600/20 px-3 py-2 text-sm font-semibold text-blue-300 hover:bg-blue-600/30">
+            Switch role &amp; view permissions →
+          </Link>
           <Link href="/alerts" onClick={() => setOpen(false)} className="mt-1 block rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-slate-800">
             👤 Civilian / public view
             <span className="block text-xs text-slate-500">Read alerts, guides, map, and registry</span>
           </Link>
-          <Link href="/admin/alerts" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-amber-300 hover:bg-slate-800">
+          <Link href={role === 'admin' || role === 'operator' ? '/admin/alerts' : '/access'} onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-amber-300 hover:bg-slate-800">
             📢 Alert operator
             <span className="block text-xs text-slate-500">Broadcast and manage alerts</span>
           </Link>
-          <Link href="/admin" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-red-300 hover:bg-slate-800">
+          <Link href={role === 'admin' ? '/admin' : '/access'} onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-red-300 hover:bg-slate-800">
             🛡️ Administrator
             <span className="block text-xs text-slate-500">PIN, settings, backup, and reset</span>
           </Link>

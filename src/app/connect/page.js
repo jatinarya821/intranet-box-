@@ -22,6 +22,7 @@ export default function ConnectPage() {
   const [networkPassword, setNetworkPassword] = useState('');
   const [wifiQrDataUrl, setWifiQrDataUrl] = useState(null);
   const [qrError, setQrError] = useState('');
+  const [addressWarning, setAddressWarning] = useState('');
 
   const host = normaliseHost(customIp);
   const connectUrl = host ? `http://${host}:${networkInfo.port}` : '';
@@ -32,16 +33,24 @@ export default function ConnectPage() {
   useEffect(() => {
     const controller = new AbortController();
 
-    fetch('/api/network', { signal: controller.signal })
-      .then((response) => (response.ok ? response.json() : Promise.reject()))
-      .then(({ addresses, host: requestHost, port }) => {
-        const isLanIp = /^(?!127\.)\d{1,3}(?:\.\d{1,3}){3}$/.test(requestHost);
+    const networkRequest = fetch('/api/network', { signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error('Network information unavailable'))));
+    const settingsRequest = fetch('/api/settings', { signal: controller.signal, cache: 'no-store' })
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error('Settings unavailable'))));
+
+    Promise.all([networkRequest, settingsRequest])
+      .then(([{ addresses, port }, settings]) => {
+        const browserHost = window.location.hostname;
+        const configuredIp = (settings.hotspot_ip || '').trim();
         setNetworkInfo({ addresses, port });
-        setCustomIp(isLanIp ? requestHost : addresses[0] || '');
+        setCustomIp(configuredIp || (addresses.includes(browserHost) ? browserHost : addresses[0] || ''));
+        if (configuredIp && !addresses.includes(configuredIp)) {
+          setAddressWarning('The saved portal IP was not found on this device. Check the hotspot address in Camp Settings before sharing this QR code.');
+        }
       })
       .catch((error) => {
         if (error.name !== 'AbortError') {
-          setQrError('Enter this device\'s LAN IP address to generate a shareable QR code.');
+          setQrError('Could not load the saved portal address. Enter this device\'s LAN IP address below.');
         }
       });
 
@@ -156,7 +165,8 @@ export default function ConnectPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {/* QR Code panel */}
         <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6 flex flex-col items-center">
-          <div className="text-sm font-medium text-slate-400 mb-4">2. Scan to Open Portal</div>
+          <div className="text-sm font-medium text-slate-400 mb-2">2. Scan to Open Portal</div>
+          <p className="mb-4 text-center text-xs text-slate-400">First join the hotspot, then scan this code or type the address below into a browser.</p>
           <div className="bg-slate-100 rounded-xl p-3 mb-4">
             {qrDataUrl ? (
               // QR data URLs are generated locally and do not need image optimization.
@@ -174,6 +184,7 @@ export default function ConnectPage() {
             </div>
           )}
           {qrError && <p className="mt-3 text-xs text-amber-300 text-center">{qrError}</p>}
+          {addressWarning && <p className="mt-3 text-xs text-amber-300 text-center" role="status">{addressWarning}</p>}
           <div className="mt-4 w-full">
             <label className="text-xs text-slate-400 block mb-1.5">
               This device&apos;s LAN IP address:
@@ -183,7 +194,10 @@ export default function ConnectPage() {
                 className="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm focus:outline-none focus:border-blue-500 font-mono"
                 placeholder="192.168.43.1"
                 value={customIp}
-                onChange={e => setCustomIp(e.target.value)}
+                onChange={e => {
+                  setCustomIp(e.target.value);
+                  setAddressWarning('');
+                }}
               />
             </div>
             {networkInfo.addresses.length > 1 && (

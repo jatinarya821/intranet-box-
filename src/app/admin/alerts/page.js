@@ -3,10 +3,15 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import PinGate, { adminFetch, hasAdminToken } from '@/components/PinGate';
+import StaffPageGate from '@/components/StaffPageGate';
 
 const severities = ['info', 'warning', 'critical', 'safe'];
 
 export default function AdminAlertsPage() {
+  return <StaffPageGate title="Alert operator access" allowedRoles={['admin', 'operator']}><AlertControls /></StaffPageGate>;
+}
+
+function AlertControls() {
   const [alerts, setAlerts] = useState([]);
   const [form, setForm] = useState({ title: '', severity: 'info', body: '' });
   const [gateOpen, setGateOpen] = useState(false);
